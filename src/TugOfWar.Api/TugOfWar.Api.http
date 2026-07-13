@@ -1,0 +1,6 @@
+@TugOfWar.Api_HostAddress = http://localhost:5018
+
+GET {{TugOfWar.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
