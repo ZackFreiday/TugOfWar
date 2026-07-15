@@ -18,12 +18,24 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers
 builder.Services.AddControllers();
 
+// CORS for Flutter Web development
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FlutterDevelopment", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ASP.NET Core Identity for the API
+// ASP.NET Core Identity
 builder.Services
     .AddIdentityCore<User>(options =>
     {
@@ -139,7 +151,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 // Infrastructure services
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
-// Centralized exception handling
+// Global exception handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -194,8 +206,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Keep disabled while only HTTP is configured locally.
+// Keep disabled while local development uses HTTP.
 // app.UseHttpsRedirection();
+
+app.UseCors("FlutterDevelopment");
 
 app.UseAuthentication();
 app.UseAuthorization();
