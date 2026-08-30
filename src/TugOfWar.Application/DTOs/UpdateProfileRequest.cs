@@ -18,4 +18,7 @@ public class UpdateProfileRequest
 
     [StringLength(100)]
     public string? Country { get; set; }
+
+    [StringLength(1000)]
+    public string? ProfileImageUrl { get; set; }
 }

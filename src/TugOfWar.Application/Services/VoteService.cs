@@ -12,47 +12,60 @@ public class VoteService : IVoteService
 
     private readonly IVoteRepository _voteRepository;
     private readonly IFaceOffRepository _faceOffRepository;
+    private readonly IAchievementService _achievementService;
 
     public VoteService(
         IVoteRepository voteRepository,
-        IFaceOffRepository faceOffRepository)
+        IFaceOffRepository faceOffRepository,
+        IAchievementService achievementService)
     {
         _voteRepository = voteRepository;
         _faceOffRepository = faceOffRepository;
+        _achievementService = achievementService;
     }
 
-    public async Task<Vote> SubmitVote(
+    public async Task<SubmitVoteResponse> SubmitVote(
         int userId,
         int faceOffId,
         SubmitVoteRequest request)
     {
-        var faceOff = await _faceOffRepository.GetByIdAsync(faceOffId);
+        var faceOff =
+            await _faceOffRepository.GetByIdAsync(
+                faceOffId);
 
         if (faceOff == null)
         {
-            throw new InvalidOperationException("Face-off not found.");
+            throw new InvalidOperationException(
+                "Face-off not found.");
         }
 
-        var now = DateTime.UtcNow;
+        var now =
+            DateTime.UtcNow;
 
         if (now < faceOff.StartTime)
         {
-            throw new InvalidOperationException("Voting has not started yet.");
+            throw new InvalidOperationException(
+                "Voting has not started yet.");
         }
 
         if (now >= faceOff.EndTime)
         {
-            throw new InvalidOperationException("Voting has already closed.");
+            throw new InvalidOperationException(
+                "Voting has already closed.");
         }
 
-        if (faceOff.Status == FaceOffStatus.Draft ||
-            faceOff.Status == FaceOffStatus.Archived)
+        if (faceOff.Status ==
+                FaceOffStatus.Draft ||
+            faceOff.Status ==
+                FaceOffStatus.Archived)
         {
             throw new InvalidOperationException(
                 "This face-off is unavailable.");
         }
 
-        if (!Enum.IsDefined(typeof(ChosenSide), request.ChosenSide))
+        if (!Enum.IsDefined(
+                typeof(ChosenSide),
+                request.ChosenSide))
         {
             throw new InvalidOperationException(
                 "Invalid side selection.");
@@ -66,7 +79,10 @@ public class VoteService : IVoteService
         }
 
         var hasAlreadyVoted =
-            await _voteRepository.HasUserVotedAsync(userId, faceOffId);
+            await _voteRepository
+                .HasUserVotedAsync(
+                    userId,
+                    faceOffId);
 
         if (hasAlreadyVoted)
         {
@@ -74,14 +90,18 @@ public class VoteService : IVoteService
                 "User has already voted in this face-off.");
         }
 
-        var user = await _voteRepository.GetUserByIdAsync(userId);
+        var user =
+            await _voteRepository.GetUserByIdAsync(
+                userId);
 
         if (user == null)
         {
-            throw new InvalidOperationException("User not found.");
+            throw new InvalidOperationException(
+                "User not found.");
         }
 
-        if (user.CoinBalance < request.CoinBoostSupport)
+        if (user.CoinBalance <
+            request.CoinBoostSupport)
         {
             throw new InvalidOperationException(
                 "You do not have enough Tug Coins.");
@@ -91,75 +111,220 @@ public class VoteService : IVoteService
         {
             UserId = userId,
             FaceOffId = faceOffId,
-            ChosenSide = request.ChosenSide,
+            ChosenSide =
+                request.ChosenSide,
             BaseSupport = 100,
-            CoinBoostSupport = request.CoinBoostSupport,
+            CoinBoostSupport =
+                request.CoinBoostSupport,
             CreatedAt = now
         };
 
-        CoinTransaction? spentTransaction = null;
+        CoinTransaction? spentTransaction =
+            null;
 
         if (request.CoinBoostSupport > 0)
         {
-            user.CoinBalance -= request.CoinBoostSupport;
+            user.CoinBalance -=
+                request.CoinBoostSupport;
 
-            spentTransaction = new CoinTransaction
-            {
-                UserId = userId,
-                FaceOffId = faceOffId,
-                Amount = -request.CoinBoostSupport,
-                Type = CoinTransactionType.SpentBoost,
-                CreatedAt = now
-            };
+            spentTransaction =
+                new CoinTransaction
+                {
+                    UserId =
+                        userId,
+                    FaceOffId =
+                        faceOffId,
+                    Amount =
+                        -request
+                            .CoinBoostSupport,
+                    Type =
+                        CoinTransactionType
+                            .SpentBoost,
+                    CreatedAt =
+                        now
+                };
         }
 
-        var today = DateOnly.FromDateTime(now);
+        var today =
+            DateOnly.FromDateTime(
+                now);
 
         var votesToday =
-            await _voteRepository.CountVotesByUserOnDateAsync(
-                userId,
-                today);
+            await _voteRepository
+                .CountVotesByUserOnDateAsync(
+                    userId,
+                    today);
 
         var alreadyRewarded =
-            await _voteRepository.HasDailyRewardAsync(
-                userId,
-                today);
+            await _voteRepository
+                .HasDailyRewardAsync(
+                    userId,
+                    today);
 
-        CoinTransaction? rewardTransaction = null;
-        DailyReward? dailyReward = null;
+        CoinTransaction? rewardTransaction =
+            null;
 
-        // votesToday does not yet include the vote currently being created.
-        var voteCountAfterThisVote = votesToday + 1;
+        DailyReward? dailyReward =
+            null;
+
+        Notification? notification =
+            null;
+
+        // votesToday does not yet include
+        // the vote currently being created.
+        var voteCountAfterThisVote =
+            votesToday + 1;
 
         if (!alreadyRewarded &&
-            voteCountAfterThisVote >= DailyVotesRequired)
+            voteCountAfterThisVote >=
+            DailyVotesRequired)
         {
-            user.CoinBalance += DailyRewardCoins;
+            user.CoinBalance +=
+                DailyRewardCoins;
 
-            rewardTransaction = new CoinTransaction
-            {
-                UserId = userId,
-                FaceOffId = null,
-                Amount = DailyRewardCoins,
-                Type = CoinTransactionType.EarnedDailyReward,
-                CreatedAt = now
-            };
+            rewardTransaction =
+                new CoinTransaction
+                {
+                    UserId =
+                        userId,
+                    FaceOffId =
+                        null,
+                    Amount =
+                        DailyRewardCoins,
+                    Type =
+                        CoinTransactionType
+                            .EarnedDailyReward,
+                    CreatedAt =
+                        now
+                };
 
-            dailyReward = new DailyReward
+            dailyReward =
+                new DailyReward
+                {
+                    UserId =
+                        userId,
+                    RewardDate =
+                        today,
+                    VotesRequired =
+                        DailyVotesRequired,
+                    CoinsAwarded =
+                        DailyRewardCoins,
+                    CreatedAt =
+                        now
+                };
+
+            notification =
+                new Notification
+                {
+                    UserId =
+                        userId,
+                    Title =
+                        "Daily reward earned",
+                    Message =
+                        $"You earned {DailyRewardCoins} Tug Coins " +
+                        "for completing today's voting goal.",
+                    Type =
+                        "DailyReward",
+                    FaceOffId =
+                        null,
+                    IsRead =
+                        false,
+                    CreatedAt =
+                        now
+                };
+        }
+
+        var createdVote =
+            await _voteRepository
+                .CreateWithRewardAsync(
+                    vote,
+                    user,
+                    spentTransaction,
+                    rewardTransaction,
+                    dailyReward,
+                    notification);
+
+        // A successful vote may unlock
+        // participation or boost achievements.
+        await _achievementService
+            .CheckAndUnlockAchievementsAsync(
+                userId);
+
+        return new SubmitVoteResponse
+        {
+            VoteId =
+                createdVote.Id,
+
+            FaceOffId =
+                createdVote.FaceOffId,
+
+            ChosenSide =
+                (int)createdVote.ChosenSide,
+
+            CoinBoostSupport =
+                createdVote.CoinBoostSupport,
+
+            VotesToday =
+                Math.Min(
+                    voteCountAfterThisVote,
+                    DailyVotesRequired),
+
+            VotesRequired =
+                DailyVotesRequired,
+
+            DailyRewardEarned =
+                dailyReward != null,
+
+            DailyRewardCoins =
+                dailyReward != null
+                    ? DailyRewardCoins
+                    : 0,
+
+            CoinBalance =
+                user.CoinBalance
+        };
+    }
+
+    public async Task<MyVoteResponse> GetMyVote(
+        int userId,
+        int faceOffId)
+    {
+        var faceOff =
+            await _faceOffRepository.GetByIdAsync(
+                faceOffId);
+
+        if (faceOff == null)
+        {
+            throw new InvalidOperationException(
+                "Face-off not found.");
+        }
+
+        var vote =
+            await _voteRepository.GetUserVoteAsync(
+                userId,
+                faceOffId);
+
+        if (vote == null)
+        {
+            return new MyVoteResponse
             {
-                UserId = userId,
-                RewardDate = today,
-                VotesRequired = DailyVotesRequired,
-                CoinsAwarded = DailyRewardCoins,
-                CreatedAt = now
+                HasVoted = false,
+                ChosenSide = null,
+                CoinBoostSupport = 0,
+                CreatedAt = null
             };
         }
 
-        return await _voteRepository.CreateWithRewardAsync(
-            vote,
-            user,
-            spentTransaction,
-            rewardTransaction,
-            dailyReward);
+        return new MyVoteResponse
+        {
+            HasVoted =
+                true,
+            ChosenSide =
+                (int)vote.ChosenSide,
+            CoinBoostSupport =
+                vote.CoinBoostSupport,
+            CreatedAt =
+                vote.CreatedAt
+        };
     }
 }

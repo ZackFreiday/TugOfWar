@@ -18,6 +18,19 @@ public class VotesController : ControllerBase
         _voteService = voteService;
     }
 
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyVote(
+        int faceOffId)
+    {
+        var userId = GetAuthenticatedUserId();
+
+        var vote = await _voteService.GetMyVote(
+            userId,
+            faceOffId);
+
+        return Ok(vote);
+    }
+
     [HttpPost]
     public async Task<IActionResult> SubmitVote(
         int faceOffId,

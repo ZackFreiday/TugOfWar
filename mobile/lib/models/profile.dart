@@ -9,6 +9,7 @@ class Profile {
   final DateTime createdAt;
   final int faceOffsParticipated;
   final int commentsCreated;
+  final List<String> roles;
 
   const Profile({
     required this.id,
@@ -21,9 +22,14 @@ class Profile {
     required this.createdAt,
     required this.faceOffsParticipated,
     required this.commentsCreated,
+    required this.roles,
   });
 
+  bool get isAdmin => roles.contains('Admin');
+
   factory Profile.fromJson(Map<String, dynamic> json) {
+    final rolesJson = json['roles'];
+
     return Profile(
       id: json['id'] as int,
       username: json['username'] as String? ?? '',
@@ -32,10 +38,18 @@ class Profile {
       bio: json['bio'] as String?,
       country: json['country'] as String?,
       coinBalance: json['coinBalance'] as int? ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String,
+      ),
       faceOffsParticipated:
           json['faceOffsParticipated'] as int? ?? 0,
-      commentsCreated: json['commentsCreated'] as int? ?? 0,
+      commentsCreated:
+          json['commentsCreated'] as int? ?? 0,
+      roles: rolesJson is List
+          ? rolesJson
+              .map((role) => role.toString())
+              .toList()
+          : const [],
     );
   }
 }

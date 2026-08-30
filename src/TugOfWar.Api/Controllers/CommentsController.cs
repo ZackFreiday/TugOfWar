@@ -84,6 +84,24 @@ public class CommentsController : ControllerBase
         return Ok(comment);
     }
 
+    [Authorize]
+    [HttpPost("{commentId:int}/report")]
+    public async Task<IActionResult> ReportComment(
+    int commentId,
+    ReportCommentRequest request)
+    {
+        var userId =
+            GetAuthenticatedUserId();
+
+        await _commentService
+            .ReportCommentAsync(
+                userId,
+                commentId,
+                request);
+
+        return NoContent();
+    }
+
     private int GetAuthenticatedUserId()
     {
         var userIdValue = User.FindFirstValue(

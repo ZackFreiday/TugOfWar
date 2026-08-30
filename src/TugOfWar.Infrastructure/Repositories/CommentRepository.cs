@@ -10,41 +10,60 @@ using TugOfWar.Infrastructure.Data;
 
 namespace TugOfWar.Infrastructure.Repositories;
 
-public class CommentRepository : ICommentRepository
+public class CommentRepository
+    : ICommentRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public CommentRepository(ApplicationDbContext context)
+    public CommentRepository(
+        ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Comment> CreateAsync(Comment comment)
+    public async Task<Comment> CreateAsync(
+        Comment comment)
     {
-        _context.Comments.Add(comment);
+        _context.Comments.Add(
+            comment);
+
         await _context.SaveChangesAsync();
 
         return comment;
     }
 
-    public async Task<List<Comment>> GetByFaceOffIdAsync(int faceOffId)
+    public async Task<List<Comment>>
+        GetByFaceOffIdAsync(
+            int faceOffId)
     {
         return await _context.Comments
-            .Include(c => c.User)
-            .Include(c => c.Likes)
-            .Where(c =>
-                c.FaceOffId == faceOffId &&
-                !c.IsDeleted)
-            .OrderByDescending(c => c.CreatedAt)
+            .Include(comment =>
+                comment.User)
+            .Include(comment =>
+                comment.Likes)
+            .Where(comment =>
+                comment.FaceOffId ==
+                    faceOffId &&
+                !comment.IsDeleted)
+            .OrderByDescending(comment =>
+                comment.CreatedAt)
             .ToListAsync();
     }
 
-    public async Task<Comment?> GetByIdAsync(int commentId)
+    public async Task<Comment?> GetByIdAsync(
+        int commentId)
     {
         return await _context.Comments
-            .Include(c => c.User)
-            .Include(c => c.Likes)
-            .FirstOrDefaultAsync(c => c.Id == commentId);
+            .Include(comment =>
+                comment.User)
+            .Include(comment =>
+                comment.Likes)
+            .Include(comment =>
+                comment.FaceOff)
+            .FirstOrDefaultAsync(
+                comment =>
+                    comment.Id ==
+                    commentId);
     }
 
     public async Task<CommentLike?> GetLikeAsync(
@@ -52,27 +71,40 @@ public class CommentRepository : ICommentRepository
         int userId)
     {
         return await _context.CommentLikes
-            .FirstOrDefaultAsync(cl =>
-                cl.CommentId == commentId &&
-                cl.UserId == userId);
+            .FirstOrDefaultAsync(
+                like =>
+                    like.CommentId ==
+                        commentId &&
+                    like.UserId ==
+                        userId);
     }
 
-    public async Task AddLikeAsync(CommentLike commentLike)
+    public async Task AddLikeAsync(
+        CommentLike commentLike)
     {
-        _context.CommentLikes.Add(commentLike);
+        _context.CommentLikes.Add(
+            commentLike);
+
         await _context.SaveChangesAsync();
     }
 
-    public async Task RemoveLikeAsync(CommentLike commentLike)
+    public async Task RemoveLikeAsync(
+        CommentLike commentLike)
     {
-        _context.CommentLikes.Remove(commentLike);
+        _context.CommentLikes.Remove(
+            commentLike);
+
         await _context.SaveChangesAsync();
     }
 
-    public async Task<int> GetLikeCountAsync(int commentId)
+    public async Task<int> GetLikeCountAsync(
+        int commentId)
     {
         return await _context.CommentLikes
-            .CountAsync(cl => cl.CommentId == commentId);
+            .CountAsync(
+                like =>
+                    like.CommentId ==
+                    commentId);
     }
 
     public async Task SaveChangesAsync()
@@ -80,9 +112,112 @@ public class CommentRepository : ICommentRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<int> CountByUserIdAsync(int userId)
+    public async Task<int> CountByUserIdAsync(
+        int userId)
     {
         return await _context.Comments
-            .CountAsync(c => c.UserId == userId && !c.IsDeleted);
+            .CountAsync(
+                comment =>
+                    comment.UserId ==
+                        userId &&
+                    !comment.IsDeleted);
+    }
+
+    public async Task<List<Comment>>
+        GetByUserIdAsync(
+            int userId)
+    {
+        return await _context.Comments
+            .Include(comment =>
+                comment.FaceOff)
+            .Include(comment =>
+                comment.Likes)
+            .Where(comment =>
+                comment.UserId ==
+                    userId &&
+                !comment.IsDeleted)
+            .OrderByDescending(comment =>
+                comment.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<bool>
+    HasUserReportedCommentAsync(
+        int commentId,
+        int userId)
+    {
+        return await _context.CommentReports
+            .AnyAsync(
+                report =>
+                    report.CommentId ==
+                        commentId &&
+                    report.ReporterUserId ==
+                        userId &&
+                    !report.IsResolved);
+    }
+
+    public async Task<CommentReport>
+        CreateReportAsync(
+            CommentReport report)
+    {
+        _context.CommentReports.Add(
+            report);
+
+        await _context.SaveChangesAsync();
+
+        return report;
+    }
+
+    public async Task<List<CommentReport>>
+        GetUnresolvedReportsAsync()
+    {
+        return await _context.CommentReports
+            .Include(report =>
+                report.ReporterUser)
+            .Include(report =>
+                report.Comment)
+                .ThenInclude(comment =>
+                    comment!.User)
+            .Include(report =>
+                report.Comment)
+                .ThenInclude(comment =>
+                    comment!.FaceOff)
+            .Where(report =>
+                !report.IsResolved)
+            .OrderByDescending(report =>
+                report.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<CommentReport?>
+        GetReportByIdAsync(
+            int reportId)
+    {
+        return await _context.CommentReports
+            .Include(report =>
+                report.ReporterUser)
+            .Include(report =>
+                report.Comment)
+                .ThenInclude(comment =>
+                    comment!.User)
+            .Include(report =>
+                report.Comment)
+                .ThenInclude(comment =>
+                    comment!.FaceOff)
+            .FirstOrDefaultAsync(
+                report =>
+                    report.Id ==
+                    reportId);
+    }
+
+    public async Task<List<CommentReport>>
+        GetReportsByCommentIdAsync(
+            int commentId)
+    {
+        return await _context.CommentReports
+            .Where(report =>
+                report.CommentId ==
+                    commentId)
+            .ToListAsync();
     }
 }

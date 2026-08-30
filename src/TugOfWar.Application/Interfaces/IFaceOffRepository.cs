@@ -9,11 +9,21 @@ namespace TugOfWar.Application.Interfaces;
 
 public interface IFaceOffRepository
 {
-    Task<FaceOff> CreateAsync(FaceOff faceOff);
+    Task<FaceOff> CreateAsync(
+        FaceOff faceOff);
 
-    Task<List<FaceOff>> GetAllAsync();
+    Task<List<FaceOff>> GetPublicAsync();
 
-    Task<FaceOff?> GetByIdAsync(int id);
+    Task<List<FaceOff>> GetAllAdminAsync();
+
+    Task<FaceOff?> GetByIdAsync(
+        int id);
+
+    Task<FaceOff?> GetPublicByIdAsync(
+        int id);
+
+    Task PermanentlyDeleteAsync(
+        int faceOffId);
 
     Task SaveChangesAsync();
 }

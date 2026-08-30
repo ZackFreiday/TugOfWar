@@ -25,4 +25,6 @@ public class CommentResponse
     public int LikeCount { get; set; }
 
     public bool IsLikedByCurrentUser { get; set; }
+
+    public int? ChosenSide { get; set; }
 }

@@ -11,6 +11,8 @@ class FaceOffResult {
   final double sideAPercentage;
   final double sideBPercentage;
   final String? userSupportedSide;
+  final String? winningSide;
+  final bool isTie;
 
   const FaceOffResult({
     required this.faceOffId,
@@ -25,24 +27,48 @@ class FaceOffResult {
     required this.sideAPercentage,
     required this.sideBPercentage,
     required this.userSupportedSide,
+    required this.winningSide,
+    required this.isTie,
   });
 
-  factory FaceOffResult.fromJson(Map<String, dynamic> json) {
+  factory FaceOffResult.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return FaceOffResult(
-      faceOffId: json['faceOffId'] as int,
-      title: json['title'] as String? ?? '',
-      sideAName: json['sideAName'] as String? ?? '',
-      sideBName: json['sideBName'] as String? ?? '',
-      sideAVotes: json['sideAVotes'] as int? ?? 0,
-      sideBVotes: json['sideBVotes'] as int? ?? 0,
-      sideASupport: json['sideASupport'] as int? ?? 0,
-      sideBSupport: json['sideBSupport'] as int? ?? 0,
-      totalParticipants: json['totalParticipants'] as int? ?? 0,
+      faceOffId:
+          json['faceOffId'] as int,
+      title:
+          json['title'] as String? ?? '',
+      sideAName:
+          json['sideAName'] as String? ?? '',
+      sideBName:
+          json['sideBName'] as String? ?? '',
+      sideAVotes:
+          json['sideAVotes'] as int? ?? 0,
+      sideBVotes:
+          json['sideBVotes'] as int? ?? 0,
+      sideASupport:
+          json['sideASupport'] as int? ?? 0,
+      sideBSupport:
+          json['sideBSupport'] as int? ?? 0,
+      totalParticipants:
+          json['totalParticipants'] as int? ?? 0,
       sideAPercentage:
-          (json['sideAPercentage'] as num?)?.toDouble() ?? 0,
+          (json['sideAPercentage'] as num?)
+                  ?.toDouble() ??
+              0,
       sideBPercentage:
-          (json['sideBPercentage'] as num?)?.toDouble() ?? 0,
-      userSupportedSide: json['userSupportedSide'] as String?,
+          (json['sideBPercentage'] as num?)
+                  ?.toDouble() ??
+              0,
+      userSupportedSide:
+          json['userSupportedSide']
+              as String?,
+      winningSide:
+          json['winningSide']
+              as String?,
+      isTie:
+          json['isTie'] as bool? ?? false,
     );
   }
 }

@@ -7,6 +7,12 @@ obj/
 *.user
 *.suo
 
+# Development secrets
+src/TugOfWar.Api/appsettings.Development.json
+
+# Runtime profile uploads
+src/TugOfWar.Api/wwwroot/profile-images/
+
 # VS Code
 .vscode/
 

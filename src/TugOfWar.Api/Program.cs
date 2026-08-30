@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TugOfWar.Api.BackgroundServices;
 using TugOfWar.Api.ExceptionHandling;
 using TugOfWar.Application.Interfaces;
 using TugOfWar.Application.Services;
@@ -18,22 +20,32 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers
 builder.Services.AddControllers();
 
-// CORS for Flutter Web development
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("FlutterDevelopment", policy =>
-    {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    options.AddPolicy(
+        "FlutterDevelopment",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
 });
 
 // Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString =
+    builder.Configuration
+        .GetConnectionString(
+            "DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Database connection string is missing.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options =>
+        options.UseNpgsql(
+            connectionString));
 
 // ASP.NET Core Identity
 builder.Services
@@ -52,19 +64,28 @@ builder.Services
     .AddDefaultTokenProviders();
 
 // JWT configuration
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtSettings =
+    builder.Configuration
+        .GetSection("Jwt");
 
-var jwtKey = jwtSettings["Key"]
-    ?? throw new InvalidOperationException("JWT Key is missing.");
+var jwtKey =
+    jwtSettings["Key"]
+    ?? throw new InvalidOperationException(
+        "JWT Key is missing.");
 
-var jwtIssuer = jwtSettings["Issuer"]
-    ?? throw new InvalidOperationException("JWT Issuer is missing.");
+var jwtIssuer =
+    jwtSettings["Issuer"]
+    ?? throw new InvalidOperationException(
+        "JWT Issuer is missing.");
 
-var jwtAudience = jwtSettings["Audience"]
-    ?? throw new InvalidOperationException("JWT Audience is missing.");
+var jwtAudience =
+    jwtSettings["Audience"]
+    ?? throw new InvalidOperationException(
+        "JWT Audience is missing.");
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(
         JwtBearerDefaults.AuthenticationScheme,
         options =>
@@ -81,122 +102,211 @@ builder.Services
                     ValidateLifetime = true,
 
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey)),
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(
+                                jwtKey)),
 
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew =
+                        TimeSpan.Zero
                 };
 
-            options.Events = new JwtBearerEvents
-            {
-                OnTokenValidated = async context =>
+            options.Events =
+                new JwtBearerEvents
                 {
-                    var userIdValue = context.Principal?
-                        .FindFirstValue(ClaimTypes.NameIdentifier);
+                    OnTokenValidated =
+                        async context =>
+                        {
+                            var userIdValue =
+                                context.Principal?
+                                    .FindFirstValue(
+                                        ClaimTypes
+                                            .NameIdentifier);
 
-                    if (!int.TryParse(userIdValue, out var userId))
-                    {
-                        context.Fail(
-                            "The authenticated user ID is invalid.");
+                            if (!int.TryParse(
+                                userIdValue,
+                                out var userId))
+                            {
+                                context.Fail(
+                                    "The authenticated user ID is invalid.");
 
-                        return;
-                    }
+                                return;
+                            }
 
-                    var userManager = context.HttpContext
-                        .RequestServices
-                        .GetRequiredService<UserManager<User>>();
+                            var userManager =
+                                context.HttpContext
+                                    .RequestServices
+                                    .GetRequiredService<
+                                        UserManager<User>>();
 
-                    var user = await userManager.FindByIdAsync(
-                        userId.ToString());
+                            var user =
+                                await userManager
+                                    .FindByIdAsync(
+                                        userId.ToString());
 
-                    if (user == null)
-                    {
-                        context.Fail(
-                            "The user account no longer exists.");
+                            if (user == null)
+                            {
+                                context.Fail(
+                                    "The user account no longer exists.");
 
-                        return;
-                    }
+                                return;
+                            }
 
-                    if (user.IsSuspended)
-                    {
-                        context.Fail(
-                            "This account has been suspended.");
-                    }
-                }
-            };
+                            if (user.IsSuspended)
+                            {
+                                context.Fail(
+                                    "This account has been suspended.");
+                            }
+                        }
+                };
         });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.DefaultPolicy =
-        new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder(
-            JwtBearerDefaults.AuthenticationScheme)
-        .RequireAuthenticatedUser()
-        .Build();
-});
+builder.Services.AddAuthorization(
+    options =>
+    {
+        options.DefaultPolicy =
+            new Microsoft.AspNetCore.Authorization
+                .AuthorizationPolicyBuilder(
+                    JwtBearerDefaults
+                        .AuthenticationScheme)
+                .RequireAuthenticatedUser()
+                .Build();
+    });
 
 // Repositories
-builder.Services.AddScoped<IFaceOffRepository, FaceOffRepository>();
-builder.Services.AddScoped<IVoteRepository, VoteRepository>();
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<
+    IFaceOffRepository,
+    FaceOffRepository>();
+
+builder.Services.AddScoped<
+    IVoteRepository,
+    VoteRepository>();
+
+builder.Services.AddScoped<
+    ICommentRepository,
+    CommentRepository>();
+
+builder.Services.AddScoped<
+    ICoinTransactionRepository,
+    CoinTransactionRepository>();
+
+builder.Services.AddScoped<
+    INotificationRepository,
+    NotificationRepository>();
+
+builder.Services.AddScoped<
+    IUserAchievementRepository,
+    UserAchievementRepository>();
 
 // Application services
-builder.Services.AddScoped<IFaceOffService, FaceOffService>();
-builder.Services.AddScoped<IVoteService, VoteService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
-builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<
+    IFaceOffService,
+    FaceOffService>();
+
+builder.Services.AddScoped<
+    IVoteService,
+    VoteService>();
+
+builder.Services.AddScoped<
+    IAuthService,
+    AuthService>();
+
+builder.Services.AddScoped<
+    ICommentService,
+    CommentService>();
+
+builder.Services.AddScoped<
+    IProfileService,
+    ProfileService>();
+
+builder.Services.AddScoped<
+    IAdminUserService,
+    AdminUserService>();
+
+builder.Services.AddScoped<
+    INotificationService,
+    NotificationService>();
+
+builder.Services.AddScoped<
+    IAchievementService,
+    AchievementService>();
 
 // Infrastructure services
-builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<
+    IJwtTokenGenerator,
+    JwtTokenGenerator>();
+
+// Background services
+builder.Services.AddHostedService<
+    FaceOffLifecycleBackgroundService>();
 
 // Global exception handling
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<
+    GlobalExceptionHandler>();
+
 builder.Services.AddProblemDetails();
+
+// Reverse proxy / HTTPS forwarding support
+builder.Services.Configure<ForwardedHeadersOptions>(
+    options =>
+    {
+        options.ForwardedHeaders =
+            ForwardedHeaders.XForwardedFor |
+            ForwardedHeaders.XForwardedProto;
+    });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
+builder.Services.AddSwaggerGen(
+    options =>
     {
-        Title = "TugOfWar API",
-        Version = "v1"
+        options.SwaggerDoc(
+            "v1",
+            new OpenApiInfo
+            {
+                Title = "TugVote API",
+                Version = "v1"
+            });
+
+        options.AddSecurityDefinition(
+            "Bearer",
+            new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description =
+                    "Paste the JWT token only. Swagger adds 'Bearer' automatically.",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme =
+                    JwtBearerDefaults
+                        .AuthenticationScheme,
+                BearerFormat = "JWT"
+            });
+
+        options.AddSecurityRequirement(
+            new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference =
+                            new OpenApiReference
+                            {
+                                Type =
+                                    ReferenceType
+                                        .SecurityScheme,
+                                Id = "Bearer"
+                            }
+                    },
+                    Array.Empty<string>()
+                }
+            });
     });
 
-    options.AddSecurityDefinition(
-        "Bearer",
-        new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Description =
-                "Paste the JWT token only. Swagger adds 'Bearer' automatically.",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.Http,
-            Scheme = JwtBearerDefaults.AuthenticationScheme,
-            BearerFormat = "JWT"
-        });
-
-    options.AddSecurityRequirement(
-        new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
-        });
-});
-
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.UseExceptionHandler();
 
@@ -204,18 +314,21 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.UseCors(
+        "FlutterDevelopment");
 }
 
-// Keep disabled while local development uses HTTP.
-// app.UseHttpsRedirection();
-
-app.UseCors("FlutterDevelopment");
+// Static files
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-await IdentitySeeder.SeedAsync(app.Services);
+await IdentitySeeder.SeedAsync(
+    app.Services,
+    app.Environment.IsDevelopment());
 
 app.Run();

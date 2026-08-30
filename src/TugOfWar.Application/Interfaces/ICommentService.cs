@@ -30,4 +30,18 @@ public interface ICommentService
     Task<CommentResponse> ToggleLikeAsync(
         int userId,
         int commentId);
+
+    Task ReportCommentAsync(
+        int userId,
+        int commentId,
+        ReportCommentRequest request);
+
+    Task<List<CommentReportResponse>>
+        GetUnresolvedReportsAsync();
+
+    Task DismissReportAsync(
+        int reportId);
+
+    Task DeleteReportedCommentAsync(
+        int reportId);
 }

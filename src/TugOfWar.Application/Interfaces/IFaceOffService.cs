@@ -10,11 +10,15 @@ namespace TugOfWar.Application.Interfaces;
 
 public interface IFaceOffService
 {
-    Task<FaceOff> CreateFaceOff(CreateFaceOffRequest request);
+    Task<FaceOff> CreateFaceOff(
+        CreateFaceOffRequest request);
 
-    Task<List<FaceOff>> GetFaceOffs();
+    Task<List<FaceOffListResponse>> GetFaceOffs(
+    bool isAdmin);
 
-    Task<FaceOff?> GetFaceOffById(int id);
+    Task<FaceOff?> GetFaceOffById(
+        int id,
+        bool isAdmin);
 
     Task<FaceOffResultResponse> GetResultsAsync(
         int faceOffId,
@@ -24,7 +28,12 @@ public interface IFaceOffService
         int id,
         UpdateFaceOffRequest request);
 
-    Task ArchiveFaceOffAsync(int id);
+    Task ArchiveFaceOffAsync(
+        int id);
 
-    Task CloseFaceOffAsync(int id);
+    Task CloseFaceOffAsync(
+        int id);
+
+    Task PermanentlyDeleteFaceOffAsync(
+        int id);
 }

@@ -10,5 +10,12 @@ namespace TugOfWar.Application.Interfaces;
 
 public interface IVoteService
 {
-    Task<Vote> SubmitVote(int userId, int faceOffId, SubmitVoteRequest request);
+    Task<SubmitVoteResponse> SubmitVote(
+    int userId,
+    int faceOffId,
+    SubmitVoteRequest request);
+
+    Task<MyVoteResponse> GetMyVote(
+        int userId,
+        int faceOffId);
 }

@@ -9,18 +9,45 @@ public class VoteRepository : IVoteRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public VoteRepository(ApplicationDbContext context)
+    public VoteRepository(
+        ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<bool> HasUserVotedAsync(int userId, int faceOffId)
+    public async Task<bool> HasUserVotedAsync(
+        int userId,
+        int faceOffId)
     {
         return await _context.Votes
-            .AnyAsync(v => v.UserId == userId && v.FaceOffId == faceOffId);
+            .AnyAsync(v =>
+                v.UserId == userId &&
+                v.FaceOffId == faceOffId);
     }
 
-    public async Task<Vote> CreateAsync(Vote vote)
+    public async Task<Vote?> GetUserVoteAsync(
+        int userId,
+        int faceOffId)
+    {
+        return await _context.Votes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v =>
+                v.UserId == userId &&
+                v.FaceOffId == faceOffId);
+    }
+
+    public async Task<List<Vote>> GetByUserIdAsync(
+    int userId)
+    {
+        return await _context.Votes
+            .AsNoTracking()
+            .Where(v => v.UserId == userId)
+            .OrderByDescending(v => v.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Vote> CreateAsync(
+        Vote vote)
     {
         _context.Votes.Add(vote);
         await _context.SaveChangesAsync();
@@ -28,23 +55,27 @@ public class VoteRepository : IVoteRepository
         return vote;
     }
 
-    public async Task<User?> GetUserByIdAsync(int userId)
+    public async Task<User?> GetUserByIdAsync(
+        int userId)
     {
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .FirstOrDefaultAsync(u =>
+                u.Id == userId);
     }
 
-    public async Task<Vote> CreateWithCoinTransactionAsync(
-        Vote vote,
-        User user,
-        CoinTransaction? coinTransaction)
+    public async Task<Vote>
+        CreateWithCoinTransactionAsync(
+            Vote vote,
+            User user,
+            CoinTransaction? coinTransaction)
     {
         _context.Votes.Add(vote);
         _context.Users.Update(user);
 
         if (coinTransaction != null)
         {
-            _context.CoinTransactions.Add(coinTransaction);
+            _context.CoinTransactions.Add(
+                coinTransaction);
         }
 
         await _context.SaveChangesAsync();
@@ -52,25 +83,48 @@ public class VoteRepository : IVoteRepository
         return vote;
     }
 
-    public async Task<List<Vote>> GetByFaceOffIdAsync(int faceOffId)
+    public async Task<List<Vote>>
+        GetByFaceOffIdAsync(
+            int faceOffId)
     {
         return await _context.Votes
-            .Where(v => v.FaceOffId == faceOffId)
+            .Where(v =>
+                v.FaceOffId == faceOffId)
             .ToListAsync();
     }
 
-    public async Task<int> CountByUserIdAsync(int userId)
+    public async Task<int> CountByUserIdAsync(
+        int userId)
     {
         return await _context.Votes
-            .CountAsync(v => v.UserId == userId);
+            .CountAsync(v =>
+                v.UserId == userId);
     }
 
-    public async Task<int> CountVotesByUserOnDateAsync(
-    int userId,
-    DateOnly date)
+    public async Task<bool> HasUserUsedCoinBoostAsync(
+    int userId)
     {
-        var start = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var end = date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        return await _context.Votes
+            .AsNoTracking()
+            .AnyAsync(v =>
+                v.UserId == userId &&
+                v.CoinBoostSupport > 0);
+    }
+
+    public async Task<int>
+        CountVotesByUserOnDateAsync(
+            int userId,
+            DateOnly date)
+    {
+        var start = date.ToDateTime(
+            TimeOnly.MinValue,
+            DateTimeKind.Utc);
+
+        var end = date
+            .AddDays(1)
+            .ToDateTime(
+                TimeOnly.MinValue,
+                DateTimeKind.Utc);
 
         return await _context.Votes
             .Where(v =>
@@ -92,29 +146,40 @@ public class VoteRepository : IVoteRepository
                 r.RewardDate == date);
     }
 
-    public async Task<Vote> CreateWithRewardAsync(
+    public async Task<Vote>
+    CreateWithRewardAsync(
         Vote vote,
         User user,
         CoinTransaction? spentTransaction,
         CoinTransaction? rewardTransaction,
-        DailyReward? dailyReward)
+        DailyReward? dailyReward,
+        Notification? notification)
     {
         _context.Votes.Add(vote);
         _context.Users.Update(user);
 
         if (spentTransaction != null)
         {
-            _context.CoinTransactions.Add(spentTransaction);
+            _context.CoinTransactions.Add(
+                spentTransaction);
         }
 
         if (rewardTransaction != null)
         {
-            _context.CoinTransactions.Add(rewardTransaction);
+            _context.CoinTransactions.Add(
+                rewardTransaction);
         }
 
         if (dailyReward != null)
         {
-            _context.DailyRewards.Add(dailyReward);
+            _context.DailyRewards.Add(
+                dailyReward);
+        }
+
+        if (notification != null)
+        {
+            _context.Notifications.Add(
+                notification);
         }
 
         await _context.SaveChangesAsync();
@@ -122,9 +187,11 @@ public class VoteRepository : IVoteRepository
         return vote;
     }
 
-    public async Task<bool> FaceOffHasVotesAsync(int faceOffId)
+    public async Task<bool> FaceOffHasVotesAsync(
+        int faceOffId)
     {
         return await _context.Votes
-            .AnyAsync(v => v.FaceOffId == faceOffId);
+            .AnyAsync(v =>
+                v.FaceOffId == faceOffId);
     }
 }

@@ -9,7 +9,16 @@ namespace TugOfWar.Application.Interfaces;
 
 public interface IVoteRepository
 {
-    Task<bool> HasUserVotedAsync(int userId, int faceOffId);
+    Task<bool> HasUserVotedAsync(
+        int userId,
+        int faceOffId);
+
+    Task<Vote?> GetUserVoteAsync(
+        int userId,
+        int faceOffId);
+
+    Task<List<Vote>> GetByUserIdAsync(
+    int userId);
 
     Task<Vote> CreateAsync(Vote vote);
 
@@ -22,20 +31,28 @@ public interface IVoteRepository
         User user,
         CoinTransaction? coinTransaction);
 
-    Task<List<Vote>> GetByFaceOffIdAsync(int faceOffId);
-    Task<int> CountByUserIdAsync(int userId);
+    Task<List<Vote>> GetByFaceOffIdAsync(
+        int faceOffId);
+
+    Task<int> CountByUserIdAsync(
+        int userId);
+
+    Task<bool> HasUserUsedCoinBoostAsync(
+    int userId);
+
     Task<int> CountVotesByUserOnDateAsync(
-    int userId,
-    DateOnly date);
+        int userId,
+        DateOnly date);
 
     Task<bool> HasDailyRewardAsync(
         int userId,
         DateOnly date);
 
     Task<Vote> CreateWithRewardAsync(
-        Vote vote,
-        User user,
-        CoinTransaction? spentTransaction,
-        CoinTransaction? rewardTransaction,
-        DailyReward? dailyReward);
+    Vote vote,
+    User user,
+    CoinTransaction? spentTransaction,
+    CoinTransaction? rewardTransaction,
+    DailyReward? dailyReward,
+    Notification? notification);
 }

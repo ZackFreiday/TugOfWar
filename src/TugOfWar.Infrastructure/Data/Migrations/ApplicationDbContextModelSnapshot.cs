@@ -327,6 +327,40 @@ namespace TugOfWar.Infrastructure.Data.Migrations
                     b.ToTable("CommentLikes");
                 });
 
+            modelBuilder.Entity("TugOfWar.Domain.Entities.CommentReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ReporterUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReporterUserId");
+
+                    b.HasIndex("CommentId", "ReporterUserId");
+
+                    b.ToTable("CommentReports");
+                });
+
             modelBuilder.Entity("TugOfWar.Domain.Entities.DailyReward", b =>
                 {
                     b.Property<int>("Id")
@@ -416,6 +450,50 @@ namespace TugOfWar.Infrastructure.Data.Migrations
                     b.ToTable("FaceOffs");
                 });
 
+            modelBuilder.Entity("TugOfWar.Domain.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("FaceOffId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaceOffId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("TugOfWar.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -502,6 +580,33 @@ namespace TugOfWar.Infrastructure.Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("TugOfWar.Domain.Entities.UserAchievement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("UserAchievements");
                 });
 
             modelBuilder.Entity("TugOfWar.Domain.Entities.Vote", b =>
@@ -646,6 +751,25 @@ namespace TugOfWar.Infrastructure.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TugOfWar.Domain.Entities.CommentReport", b =>
+                {
+                    b.HasOne("TugOfWar.Domain.Entities.Comment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TugOfWar.Domain.Entities.User", "ReporterUser")
+                        .WithMany()
+                        .HasForeignKey("ReporterUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("ReporterUser");
+                });
+
             modelBuilder.Entity("TugOfWar.Domain.Entities.DailyReward", b =>
                 {
                     b.HasOne("TugOfWar.Domain.Entities.User", "User")
@@ -666,6 +790,34 @@ namespace TugOfWar.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("TugOfWar.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("TugOfWar.Domain.Entities.FaceOff", "FaceOff")
+                        .WithMany()
+                        .HasForeignKey("FaceOffId");
+
+                    b.HasOne("TugOfWar.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FaceOff");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TugOfWar.Domain.Entities.UserAchievement", b =>
+                {
+                    b.HasOne("TugOfWar.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TugOfWar.Domain.Entities.Vote", b =>

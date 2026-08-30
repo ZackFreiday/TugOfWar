@@ -31,4 +31,8 @@ public class FaceOffResultResponse
     public double SideBPercentage { get; set; }
 
     public string? UserSupportedSide { get; set; }
+
+    public string? WinningSide { get; set; }
+
+    public bool IsTie { get; set; }
 }

@@ -28,7 +28,15 @@ public class CreateFaceOffRequest
     [StringLength(100)]
     public string SideBName { get; set; } = string.Empty;
 
+    [StringLength(1000)]
+    public string? SideAImageUrl { get; set; }
+
+    [StringLength(1000)]
+    public string? SideBImageUrl { get; set; }
+
     public DateTime StartTime { get; set; }
 
     public DateTime EndTime { get; set; }
+
+    public bool IsFeatured { get; set; }
 }
