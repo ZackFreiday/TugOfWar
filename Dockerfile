@@ -16,5 +16,3 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "TugOfWar.Api.dll"]
-
-</Project>
