@@ -1,18 +1,27 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
-COPY . .
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
-RUN dotnet restore src/TugOfWar.Api/TugOfWar.Api.csproj
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
 
-RUN dotnet publish src/TugOfWar.Api/TugOfWar.Api.csproj \
-    -c Release \
-    -o /app/publish \
-    --no-restore
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
-WORKDIR /app
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
 
-COPY --from=build /app/publish .
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
 
-ENTRYPOINT ["dotnet", "TugOfWar.Api.dll"]
+  <ItemGroup>
+    <ProjectReference Include="..\TugOfWar.Application\TugOfWar.Application.csproj" />
+    <ProjectReference Include="..\TugOfWar.Infrastructure\TugOfWar.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
