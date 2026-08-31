@@ -339,6 +339,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Apply EF Core migrations before any startup code
+// queries the database.
+using (var scope =
+    app.Services.CreateScope())
+{
+    var dbContext =
+        scope.ServiceProvider
+            .GetRequiredService<
+                ApplicationDbContext>();
+
+    await dbContext.Database
+        .MigrateAsync();
+}
+
+// Seed roles after the database schema exists.
 await IdentitySeeder.SeedAsync(
     app.Services,
     app.Environment.IsDevelopment());
