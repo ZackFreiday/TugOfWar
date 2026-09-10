@@ -74,6 +74,65 @@ class AuthService {
     );
   }
 
+  Future<void> deleteAccount() async {
+    final token = await getToken();
+
+    if (token == null ||
+        token.isEmpty) {
+      await handleUnauthorized();
+    }
+
+    final response =
+        await http.delete(
+      Uri.parse(
+        '$_baseUrl/account',
+      ),
+      headers: {
+        'Authorization':
+            'Bearer $token',
+      },
+    );
+
+    if (response.statusCode ==
+        401) {
+      await handleUnauthorized();
+    }
+
+    if (response.statusCode >= 200 &&
+        response.statusCode < 300) {
+      await logout();
+      return;
+    }
+
+    String message =
+        'Account could not be deleted.';
+
+    if (response.body.isNotEmpty) {
+      try {
+        final decodedBody =
+            jsonDecode(
+          response.body,
+        );
+
+        if (decodedBody
+            is Map<String, dynamic>) {
+          message =
+              decodedBody['detail']
+                      ?.toString() ??
+                  decodedBody['message']
+                      ?.toString() ??
+                  message;
+        }
+      } catch (_) {
+        // Keep the fallback message.
+      }
+    }
+
+    throw Exception(
+      message,
+    );
+  }
+
   Future<String?> getToken() {
     return _storage.read(
       key: 'jwt_token',

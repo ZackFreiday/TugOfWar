@@ -28,6 +28,7 @@ class AppState extends ChangeNotifier {
   bool _isAuthenticating = false;
   bool _isLoadingUnreadNotifications =
       false;
+  bool _isDeletingAccount = false;
 
   int _unreadNotificationCount = 0;
 
@@ -53,6 +54,9 @@ class AppState extends ChangeNotifier {
 
   bool get isAuthenticating =>
       _isAuthenticating;
+
+  bool get isDeletingAccount =>
+      _isDeletingAccount;
 
   bool get isLoggedIn =>
       _profile != null;
@@ -260,6 +264,31 @@ class AppState extends ChangeNotifier {
       rethrow;
     } finally {
       _isLoadingProfile = false;
+
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    if (_isDeletingAccount) {
+      return;
+    }
+
+    _isDeletingAccount = true;
+    notifyListeners();
+
+    try {
+      await _authService
+          .deleteAccount();
+
+      _profile = null;
+      _unreadNotificationCount = 0;
+    } on SessionExpiredException {
+      await _clearSessionState();
+
+      rethrow;
+    } finally {
+      _isDeletingAccount = false;
 
       notifyListeners();
     }

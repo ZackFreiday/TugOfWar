@@ -100,4 +100,21 @@ public class AuthService : IAuthService
             CoinBalance = user.CoinBalance
         };
     }
+
+    public async Task DeleteAccount(int userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException("Account could not be deleted.");
+        }
+    }
 }

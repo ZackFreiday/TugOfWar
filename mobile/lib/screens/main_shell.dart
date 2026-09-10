@@ -162,7 +162,7 @@ class _MainShellState extends State<MainShell> {
     ];
 
     final titles = <String>[
-      'TugOfWar',
+      'TugVote',
       'Profile',
       if (isAdmin) 'Admin',
     ];

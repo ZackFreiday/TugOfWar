@@ -9,13 +9,13 @@ void main() {
     ChangeNotifierProvider(
       create: (_) =>
           AppState()..initialize(),
-      child: const TugOfWarApp(),
+      child: const TugVoteApp(),
     ),
   );
 }
 
-class TugOfWarApp extends StatelessWidget {
-  const TugOfWarApp({
+class TugVoteApp extends StatelessWidget {
+  const TugVoteApp({
     super.key,
   });
 
@@ -31,7 +31,7 @@ class TugOfWarApp extends StatelessWidget {
         '${appState.isInitializing}-'
         '${appState.isLoggedIn}',
       ),
-      title: 'TugOfWar',
+      title: 'TugVote',
       debugShowCheckedModeBanner:
           false,
       theme: ThemeData(

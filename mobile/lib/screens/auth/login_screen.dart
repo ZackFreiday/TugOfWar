@@ -61,7 +61,7 @@ class _LoginScreenState
         lower.contains(
           'connection timed out',
         )) {
-      return 'Unable to connect to TugOfWar. '
+      return 'Unable to connect to TugVote. '
           'Check your connection and try again.';
     }
 
@@ -189,7 +189,7 @@ class _LoginScreenState
                     height: 16,
                   ),
                   Text(
-                    'TugOfWar',
+                    'TugVote',
                     textAlign:
                         TextAlign.center,
                     style:

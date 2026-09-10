@@ -243,7 +243,7 @@ class _RegisterScreenState
                     height: 8,
                   ),
                   Text(
-                    'Join TugOfWar and choose your side.',
+                    'Join TugVote and choose your side.',
                     textAlign:
                         TextAlign.center,
                     style:

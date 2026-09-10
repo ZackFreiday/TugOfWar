@@ -39,6 +39,7 @@ class _ProfileScreenState
       _pageFuture;
 
   int? _openingFaceOffId;
+  bool _isDeletingAccount = false;
 
   @override
   void initState() {
@@ -161,6 +162,96 @@ class _ProfileScreenState
       ),
       (route) => false,
     );
+  }
+
+  Future<void> _deleteAccount(
+    BuildContext context,
+  ) async {
+    if (_isDeletingAccount) {
+      return;
+    }
+
+    final confirmed =
+        await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'Delete account?',
+          ),
+          content: const Text(
+            'This permanently deletes your TugVote account '
+            'and associated account data. This action cannot '
+            'be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(false);
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(true);
+              },
+              child: const Text(
+                'Delete account',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true ||
+        !context.mounted) {
+      return;
+    }
+
+    setState(() {
+      _isDeletingAccount = true;
+    });
+
+    try {
+      await context
+          .read<AppState>()
+          .deleteAccount();
+
+      if (!context.mounted) {
+        return;
+      }
+
+      Navigator.of(context)
+          .pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) =>
+              const LoginScreen(),
+        ),
+        (route) => false,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage(
+        'Account could not be deleted. '
+        'Please try again.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeletingAccount = false;
+        });
+      }
+    }
   }
 
   Future<void> _openEditProfile(
@@ -1083,6 +1174,44 @@ class _ProfileScreenState
 
                 const SizedBox(
                   height: 24,
+                ),
+
+                OutlinedButton.icon(
+                  onPressed:
+                      _isDeletingAccount
+                          ? null
+                          : () {
+                              _deleteAccount(
+                                context,
+                              );
+                            },
+                  icon: _isDeletingAccount
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.delete_forever_outlined,
+                        ),
+                  label: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(
+                      vertical: 14,
+                    ),
+                    child: Text(
+                      _isDeletingAccount
+                          ? 'Deleting...'
+                          : 'Delete account',
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 12,
                 ),
 
                 OutlinedButton.icon(
