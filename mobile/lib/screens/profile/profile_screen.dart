@@ -143,27 +143,6 @@ class _ProfileScreenState
     }
   }
 
-  Future<void> _logout(
-    BuildContext context,
-  ) async {
-    await context
-        .read<AppState>()
-        .logout();
-
-    if (!context.mounted) {
-      return;
-    }
-
-    Navigator.of(context)
-        .pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) =>
-            const LoginScreen(),
-      ),
-      (route) => false,
-    );
-  }
-
   Future<void> _deleteAccount(
     BuildContext context,
   ) async {
@@ -1206,34 +1185,6 @@ class _ProfileScreenState
                       _isDeletingAccount
                           ? 'Deleting...'
                           : 'Delete account',
-                    ),
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 12,
-                ),
-
-                OutlinedButton.icon(
-                  onPressed: () {
-                    _logout(
-                      context,
-                    );
-                  },
-                  icon:
-                      const Icon(
-                    Icons.logout,
-                  ),
-                  label:
-                      const Padding(
-                    padding:
-                        EdgeInsets
-                            .symmetric(
-                      vertical:
-                          14,
-                    ),
-                    child: Text(
-                      'Log out',
                     ),
                   ),
                 ),

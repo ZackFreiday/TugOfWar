@@ -865,6 +865,59 @@ class _FaceOffDetailsScreenState
     );
   }
 
+  Widget _buildCommentAvatar(
+  FaceOffComment comment,
+) {
+  const purple =
+      Color(0xFF6C4DFF);
+
+  final profileImageUrl =
+      comment.profileImageUrl?.trim();
+
+  if (profileImageUrl == null ||
+      profileImageUrl.isEmpty) {
+    return const CircleAvatar(
+      radius: 20,
+      backgroundColor:
+          Color(0xFFEDE9FF),
+      child: Icon(
+        Icons.person,
+        size: 23,
+        color: purple,
+      ),
+    );
+  }
+
+  return CircleAvatar(
+    radius: 20,
+    backgroundColor:
+        const Color(0xFFEDE9FF),
+    child: ClipOval(
+      child: Image.network(
+        profileImageUrl,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (
+          context,
+          error,
+          stackTrace,
+        ) {
+          return const SizedBox(
+            width: 40,
+            height: 40,
+            child: Icon(
+              Icons.person,
+              size: 23,
+              color: purple,
+            ),
+          );
+        },
+      ),
+    ),
+  );
+}
+
   Widget _buildDiscussion() {
     final appState =
         context.watch<AppState>();
@@ -1052,14 +1105,11 @@ class _FaceOffDetailsScreenState
                             CrossAxisAlignment
                                 .start,
                         children: [
-                          const CircleAvatar(
-                            child: Icon(
-                              Icons
-                                  .person_outline,
-                            ),
-                          ),
+                           _buildCommentAvatar(
+                             comment,
+                           ),
 
-                          const SizedBox(
+                         const SizedBox(
                             width: 12,
                           ),
 
@@ -1343,10 +1393,28 @@ class _FaceOffDetailsScreenState
     );
   }
 
-  @override
+    @override
   Widget build(
     BuildContext context,
   ) {
+    const purple =
+        Color(0xFF6C4DFF);
+
+    const blue =
+        Color(0xFF147BFF);
+
+    const blueLight =
+        Color(0xFFEAF3FF);
+
+    const red =
+        Color(0xFFFF3158);
+
+    const redLight =
+        Color(0xFFFFEDF1);
+
+    const secondaryText =
+        Color(0xFF686570);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult:
@@ -1362,15 +1430,17 @@ class _FaceOffDetailsScreenState
       },
       child: Scaffold(
         appBar: AppBar(
-          title:
-              const Text(
+          title: const Text(
             'Face-off',
           ),
         ),
         body: SingleChildScrollView(
           padding:
-              const EdgeInsets.all(
+              const EdgeInsets.fromLTRB(
             20,
+            12,
+            20,
+            24,
           ),
           child: Center(
             child: ConstrainedBox(
@@ -1384,6 +1454,9 @@ class _FaceOffDetailsScreenState
                         .stretch,
                 children: [
                   Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
                     children: [
                       Expanded(
                         child: Text(
@@ -1396,48 +1469,61 @@ class _FaceOffDetailsScreenState
                               ?.copyWith(
                                 fontWeight:
                                     FontWeight
-                                        .bold,
+                                        .w800,
                               ),
                         ),
                       ),
-                      if (faceOff.isFeatured)
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 30,
+                      if (faceOff
+                          .isFeatured)
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration:
+                              const BoxDecoration(
+                            color: Color(
+                              0xFFEDE9FF,
+                            ),
+                            shape:
+                                BoxShape.circle,
+                          ),
+                          child:
+                              const Icon(
+                            Icons
+                                .star_rounded,
+                            color: purple,
+                            size: 22,
+                          ),
                         ),
                     ],
                   ),
-
                   const SizedBox(
-                    height: 12,
+                    height: 8,
                   ),
-
                   Text(
                     faceOff.description,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyLarge,
+                    )
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(
+                          color:
+                              secondaryText,
+                          height: 1.4,
+                        ),
                   ),
-
                   const SizedBox(
-                    height: 20,
+                    height: 16,
                   ),
 
                   Align(
                     alignment:
                         Alignment.centerLeft,
-                    child: Chip(
-                      label:
-                          Text(
-                        _statusText,
-                      ),
-                      avatar: Icon(
-                        faceOff.isLive
-                            ? Icons.circle
-                            : Icons
-                                .schedule_outlined,
-                        size: 16,
-                      ),
+                    child:
+                        _FaceOffStatusBadge(
+                      text: _statusText,
+                      isLive:
+                          faceOff.isLive,
                     ),
                   ),
 
@@ -1445,47 +1531,106 @@ class _FaceOffDetailsScreenState
                     height: 24,
                   ),
 
-                  Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                  // Side A vs Side B
+                  Stack(
+                    alignment:
+                        Alignment.center,
                     children: [
-                      Expanded(
-                        child:
-                            _OptionalSideImage(
-                          imageUrl:
-                              faceOff
-                                  .sideAImageUrl,
-                          label:
-                              faceOff
-                                  .sideAName,
-                          fallbackIcon:
-                              Icons
-                                  .chevron_left_rounded,
+                      Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+                        children: [
+                          Expanded(
+                            child:
+                                _OptionalSideImage(
+                              imageUrl:
+                                  faceOff
+                                      .sideAImageUrl,
+                              label:
+                                  faceOff
+                                      .sideAName,
+                              fallbackIcon:
+                                  Icons
+                                      .chevron_left_rounded,
+                              accentColor:
+                                  blue,
+                              tintColor:
+                                  blueLight,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          Expanded(
+                            child:
+                                _OptionalSideImage(
+                              imageUrl:
+                                  faceOff
+                                      .sideBImageUrl,
+                              label:
+                                  faceOff
+                                      .sideBName,
+                              fallbackIcon:
+                                  Icons
+                                      .chevron_right_rounded,
+                              accentColor:
+                                  red,
+                              tintColor:
+                                  redLight,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Container(
+                        width: 48,
+                        height: 48,
+                        alignment:
+                            Alignment.center,
+                        decoration:
+                            BoxDecoration(
+                          color: purple,
+                          shape:
+                              BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                Colors.white,
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: purple
+                                  .withValues(
+                                alpha: 0.28,
+                              ),
+                              blurRadius: 18,
+                              offset:
+                                  const Offset(
+                                0,
+                                5,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                      Expanded(
                         child:
-                            _OptionalSideImage(
-                          imageUrl:
-                              faceOff
-                                  .sideBImageUrl,
-                          label:
-                              faceOff
-                                  .sideBName,
-                          fallbackIcon:
-                              Icons
-                                  .chevron_right_rounded,
+                            const Text(
+                          'VS',
+                          style:
+                              TextStyle(
+                            color:
+                                Colors.white,
+                            fontWeight:
+                                FontWeight.w900,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
                   ),
 
                   const SizedBox(
-                    height: 24,
+                    height: 22,
                   ),
 
                   if (_voteLoading)
@@ -1499,8 +1644,23 @@ class _FaceOffDetailsScreenState
                             CircularProgressIndicator(),
                       ),
                     )
-                  else if (faceOff.isLive &&
+
+                  // LIVE + NOT VOTED
+                  else if (faceOff
+                          .isLive &&
                       !_voteSubmitted) ...[
+                    const Text(
+                      'Choose your side',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+
                     Row(
                       children: [
                         Expanded(
@@ -1512,6 +1672,10 @@ class _FaceOffDetailsScreenState
                             selected:
                                 _selectedSide ==
                                     1,
+                            accentColor:
+                                blue,
+                            tintColor:
+                                blueLight,
                             onPressed:
                                 _isSubmitting
                                     ? null
@@ -1526,7 +1690,7 @@ class _FaceOffDetailsScreenState
                           ),
                         ),
                         const SizedBox(
-                          width: 16,
+                          width: 12,
                         ),
                         Expanded(
                           child:
@@ -1537,6 +1701,10 @@ class _FaceOffDetailsScreenState
                             selected:
                                 _selectedSide ==
                                     2,
+                            accentColor:
+                                red,
+                            tintColor:
+                                redLight,
                             onPressed:
                                 _isSubmitting
                                     ? null
@@ -1554,21 +1722,47 @@ class _FaceOffDetailsScreenState
                     ),
 
                     const SizedBox(
-                      height: 28,
+                      height: 26,
                     ),
 
-                    Text(
-                      'Coin boost',
-                      style: Theme.of(
-                        context,
-                      )
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
+                    Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration:
+                              const BoxDecoration(
+                            color: Color(
+                              0xFFEDE9FF,
+                            ),
+                            shape:
+                                BoxShape.circle,
                           ),
+                          child:
+                              const Icon(
+                            Icons
+                                .monetization_on_outlined,
+                            color: purple,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          'Coin boost',
+                          style: Theme.of(
+                            context,
+                          )
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                fontWeight:
+                                    FontWeight
+                                        .w800,
+                              ),
+                        ),
+                      ],
                     ),
 
                     const SizedBox(
@@ -1576,8 +1770,8 @@ class _FaceOffDetailsScreenState
                     ),
 
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         0,
                         10,
@@ -1585,6 +1779,10 @@ class _FaceOffDetailsScreenState
                         50,
                       ].map(
                         (boost) {
+                          final selected =
+                              _coinBoost ==
+                                  boost;
+
                           return ChoiceChip(
                             label: Text(
                               boost == 0
@@ -1592,8 +1790,35 @@ class _FaceOffDetailsScreenState
                                   : '+$boost support',
                             ),
                             selected:
-                                _coinBoost ==
-                                    boost,
+                                selected,
+                            selectedColor:
+                                purple,
+                            backgroundColor:
+                                Colors.white,
+                            checkmarkColor:
+                                Colors.white,
+                            side: BorderSide(
+                              color: selected
+                                  ? purple
+                                  : const Color(
+                                      0xFFE4E1EA,
+                                    ),
+                            ),
+                            labelStyle:
+                                TextStyle(
+                              color: selected
+                                  ? Colors
+                                      .white
+                                  : const Color(
+                                      0xFF3C3942,
+                                    ),
+                              fontWeight:
+                                  selected
+                                      ? FontWeight
+                                          .w700
+                                      : FontWeight
+                                          .w500,
+                            ),
                             onSelected:
                                 _isSubmitting
                                     ? null
@@ -1611,196 +1836,161 @@ class _FaceOffDetailsScreenState
                     ),
 
                     const SizedBox(
-                      height: 28,
+                      height: 26,
                     ),
 
-                    FilledButton(
-                      onPressed:
-                          _isSubmitting
-                              ? null
-                              : _submitVote,
-                      child: Padding(
-                        padding:
-                            const EdgeInsets
-                                .symmetric(
-                          vertical: 14,
-                        ),
-                        child:
+                    SizedBox(
+                      height: 54,
+                      child:
+                          FilledButton.icon(
+                        onPressed:
                             _isSubmitting
-                                ? const SizedBox(
-                                    width:
-                                        22,
-                                    height:
-                                        22,
-                                    child:
-                                        CircularProgressIndicator(
-                                      strokeWidth:
-                                          2,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Submit vote',
-                                  ),
-                      ),
-                    ),
-                  ] else if (faceOff.isLive &&
-                      _voteSubmitted) ...[
-                    Card(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.all(
-                          20,
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(
-                                  Icons
-                                      .check_circle_outline,
+                                ? null
+                                : _submitVote,
+                        icon: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(
+                                  strokeWidth:
+                                      2,
                                 ),
-                                SizedBox(
-                                  width: 12,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Your vote has been recorded.',
-                                    style:
-                                        TextStyle(
-                                      fontWeight:
-                                          FontWeight
-                                              .w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(
-                              height: 16,
-                            ),
-
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons
-                                      .how_to_vote_outlined,
-                                  size: 20,
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Your side: '
-                                    '${_selectedSide == 1 ? faceOff.sideAName : faceOff.sideBName}',
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(
-                              height: 10,
-                            ),
-
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons
-                                      .monetization_on_outlined,
-                                  size: 20,
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    _coinBoost >
-                                            0
-                                        ? 'TugCoin boost: +$_coinBoost support'
-                                        : 'TugCoin boost: None',
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(
-                              height: 16,
-                            ),
-
-                            Text(
-                              'Final results will be available when the face-off closes.',
-                              style: Theme.of(
-                                context,
                               )
-                                  .textTheme
-                                  .bodySmall,
-                            ),
-                          ],
+                            : const Icon(
+                                Icons
+                                    .how_to_vote_rounded,
+                              ),
+                        label: Text(
+                          _isSubmitting
+                              ? 'Submitting...'
+                              : 'Submit vote',
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight
+                                    .w800,
+                          ),
                         ),
                       ),
                     ),
-                  ] else if (DateTime.now()
+                  ]
+
+                  // LIVE + ALREADY VOTED
+                  else if (faceOff
+                          .isLive &&
+                      _voteSubmitted) ...[
+                    _VoteRecordedCard(
+                      selectedSide:
+                          _selectedSide,
+                      sideAName:
+                          faceOff
+                              .sideAName,
+                      sideBName:
+                          faceOff
+                              .sideBName,
+                      coinBoost:
+                          _coinBoost,
+                    ),
+                  ]
+
+                  // SCHEDULED
+                  else if (DateTime.now()
                       .toUtc()
                       .isBefore(
                         faceOff
                             .startTime,
                       )) ...[
-                    const Card(
-                      child: Padding(
-                        padding:
-                            EdgeInsets.all(
-                          20,
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .all(
+                        16,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color: purple
+                            .withValues(
+                          alpha: 0.07,
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons
-                                  .schedule_outlined,
-                            ),
-                            SizedBox(
-                              width: 12,
-                            ),
-                            Expanded(
-                              child: Text(
-                                'Voting has not started yet.',
-                              ),
-                            ),
-                          ],
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          14,
+                        ),
+                        border:
+                            Border.all(
+                          color: purple
+                              .withValues(
+                            alpha: 0.18,
+                          ),
                         ),
                       ),
-                    ),
-                  ] else ...[
-                    OutlinedButton(
-                      onPressed:
-                          _openResults,
                       child:
-                          const Padding(
-                        padding:
-                            EdgeInsets
-                                .symmetric(
-                          vertical: 14,
+                          const Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .schedule_outlined,
+                            color: purple,
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Voting has not started yet.',
+                              style:
+                                  TextStyle(
+                                fontWeight:
+                                    FontWeight
+                                        .w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]
+
+                  // CLOSED
+                  else ...[
+                    SizedBox(
+                      height: 52,
+                      child:
+                          OutlinedButton
+                              .icon(
+                        onPressed:
+                            _openResults,
+                        icon: const Icon(
+                          Icons
+                              .bar_chart_rounded,
                         ),
-                        child: Text(
+                        label:
+                            const Text(
                           'View results',
+                          style:
+                              TextStyle(
+                            fontWeight:
+                                FontWeight
+                                    .w800,
+                          ),
                         ),
                       ),
                     ),
                   ],
 
                   const SizedBox(
-                    height: 32,
+                    height: 28,
                   ),
                   const Divider(),
                   const SizedBox(
-                    height: 20,
+                    height: 18,
                   ),
 
                   if (_voteLoading)
-                    const SizedBox.shrink()
+                    const SizedBox
+                        .shrink()
                   else if (_canViewDiscussion)
                     _buildDiscussion()
                   else if (faceOff.isLive)
@@ -1819,11 +2009,15 @@ class _SideButton
     extends StatelessWidget {
   final String label;
   final bool selected;
+  final Color accentColor;
+  final Color tintColor;
   final VoidCallback? onPressed;
 
   const _SideButton({
     required this.label,
     required this.selected,
+    required this.accentColor,
+    required this.tintColor,
     required this.onPressed,
   });
 
@@ -1831,33 +2025,75 @@ class _SideButton
   Widget build(
     BuildContext context,
   ) {
-    final child = Padding(
-      padding:
-          const EdgeInsets.symmetric(
-        vertical: 20,
-        horizontal: 8,
+    return SizedBox(
+      height: 52,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style:
+            OutlinedButton.styleFrom(
+          foregroundColor:
+              accentColor,
+          backgroundColor: selected
+              ? accentColor
+              : tintColor,
+          disabledForegroundColor:
+              accentColor.withValues(
+            alpha: 0.45,
+          ),
+          side: BorderSide(
+            color: selected
+                ? accentColor
+                : accentColor
+                    .withValues(
+                    alpha: 0.55,
+                  ),
+            width: selected
+                ? 2
+                : 1.3,
+          ),
+          shape:
+              RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(
+              14,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+          children: [
+            if (selected) ...[
+              const Icon(
+                Icons
+                    .check_circle_rounded,
+                color: Colors.white,
+                size: 19,
+              ),
+              const SizedBox(
+                width: 7,
+              ),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                textAlign:
+                    TextAlign.center,
+                maxLines: 2,
+                overflow:
+                    TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? Colors.white
+                      : accentColor,
+                  fontWeight:
+                      FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Text(
-        label,
-        textAlign:
-            TextAlign.center,
-      ),
-    );
-
-    if (selected) {
-      return FilledButton(
-        onPressed:
-            onPressed,
-        child:
-            child,
-      );
-    }
-
-    return OutlinedButton(
-      onPressed:
-          onPressed,
-      child:
-          child,
     );
   }
 }
@@ -1867,11 +2103,15 @@ class _OptionalSideImage
   final String? imageUrl;
   final String label;
   final IconData fallbackIcon;
+  final Color accentColor;
+  final Color tintColor;
 
   const _OptionalSideImage({
     required this.imageUrl,
     required this.label,
     required this.fallbackIcon,
+    required this.accentColor,
+    required this.tintColor,
   });
 
   bool get _hasImage =>
@@ -1882,72 +2122,379 @@ class _OptionalSideImage
   Widget build(
     BuildContext context,
   ) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: ClipRRect(
+    return Column(
+      children: [
+        AspectRatio(
+          aspectRatio: 1,
+          child: Container(
+            decoration:
+                BoxDecoration(
+              color: tintColor,
+              borderRadius:
+                  BorderRadius.circular(
+                18,
+              ),
+              border: Border.all(
+                color: accentColor
+                    .withValues(
+                  alpha: 0.55,
+                ),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor
+                      .withValues(
+                    alpha: 0.09,
+                  ),
+                  blurRadius: 14,
+                  offset:
+                      const Offset(
+                    0,
+                    5,
+                  ),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(
+                16.5,
+              ),
+              child: _hasImage
+                  ? Image.network(
+                      imageUrl!,
+                      fit:
+                          BoxFit.cover,
+                      errorBuilder:
+                          (_, _, _) {
+                        return _placeholder();
+                      },
+                    )
+                  : _placeholder(),
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Text(
+          label,
+          textAlign:
+              TextAlign.center,
+          maxLines: 2,
+          overflow:
+              TextOverflow.ellipsis,
+          style: TextStyle(
+            color: accentColor,
+            fontSize: 14,
+            fontWeight:
+                FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _placeholder() {
+    return ColoredBox(
+      color: tintColor,
+      child: Center(
+        child: Container(
+          width: 68,
+          height: 68,
+          decoration:
+              BoxDecoration(
+            color: Colors.white
+                .withValues(
+              alpha: 0.92,
+            ),
+            shape:
+                BoxShape.circle,
+            border: Border.all(
+              color: accentColor
+                  .withValues(
+                alpha: 0.13,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor
+                    .withValues(
+                  alpha: 0.09,
+                ),
+                blurRadius: 12,
+              ),
+            ],
+          ),
+          child: Icon(
+            fallbackIcon,
+            color: accentColor,
+            size: 46,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FaceOffStatusBadge
+    extends StatelessWidget {
+  final String text;
+  final bool isLive;
+
+  const _FaceOffStatusBadge({
+    required this.text,
+    required this.isLive,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    const purple =
+        Color(0xFF6C4DFF);
+
+    const green =
+        Color(0xFF13A864);
+
+    const gray =
+        Color(0xFF5E5B66);
+
+    final Color color;
+
+    if (isLive) {
+      color = green;
+    } else if (text ==
+        'Scheduled') {
+      color = purple;
+    } else {
+      color = gray;
+    }
+
+    final IconData icon;
+
+    if (isLive) {
+      icon = Icons.circle;
+    } else if (text ==
+        'Scheduled') {
+      icon =
+          Icons.schedule_outlined;
+    } else {
+      icon =
+          Icons.lock_outline_rounded;
+    }
+
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(
+          alpha: 0.08,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          10,
+        ),
+        border: Border.all(
+          color: color.withValues(
+            alpha: 0.18,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisSize:
+            MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: isLive ? 9 : 15,
+          ),
+          const SizedBox(
+            width: 6,
+          ),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight:
+                  FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VoteRecordedCard
+    extends StatelessWidget {
+  final int? selectedSide;
+  final String sideAName;
+  final String sideBName;
+  final int coinBoost;
+
+  const _VoteRecordedCard({
+    required this.selectedSide,
+    required this.sideAName,
+    required this.sideBName,
+    required this.coinBoost,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    const blue =
+        Color(0xFF147BFF);
+
+    const red =
+        Color(0xFFFF3158);
+
+    final sideColor =
+        selectedSide == 1
+            ? blue
+            : red;
+
+    final sideName =
+        selectedSide == 1
+            ? sideAName
+            : sideBName;
+
+    return Container(
+      padding:
+          const EdgeInsets.all(
+        16,
+      ),
+      decoration: BoxDecoration(
+        color: sideColor
+            .withValues(
+          alpha: 0.06,
+        ),
         borderRadius:
             BorderRadius.circular(
           16,
         ),
-        child: _hasImage
-            ? Image.network(
-                imageUrl!,
-                fit:
-                    BoxFit.cover,
-                errorBuilder:
-                    (_, _, _) {
-                  return _placeholder(
-                    context,
-                  );
-                },
-              )
-            : _placeholder(
-                context,
-              ),
+        border: Border.all(
+          color: sideColor
+              .withValues(
+            alpha: 0.22,
+          ),
+        ),
       ),
-    );
-  }
-
-  Widget _placeholder(
-    BuildContext context,
-  ) {
-    return ColoredBox(
-      color: Theme.of(
-        context,
-      )
-          .colorScheme
-          .surfaceContainerHighest,
-      child: Padding(
-        padding:
-            const EdgeInsets.all(
-          12,
-        ),
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-            Icon(
-              fallbackIcon,
-              size: 52,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(
-              label,
-              textAlign:
-                  TextAlign.center,
-              maxLines: 2,
-              overflow:
-                  TextOverflow.ellipsis,
-              style:
-                  const TextStyle(
-                fontWeight:
-                    FontWeight.w600,
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration:
+                    BoxDecoration(
+                  color: sideColor
+                      .withValues(
+                    alpha: 0.13,
+                  ),
+                  shape:
+                      BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons
+                      .check_rounded,
+                  color: sideColor,
+                ),
               ),
+              const SizedBox(
+                width: 10,
+              ),
+              const Expanded(
+                child: Text(
+                  'Your vote has been recorded.',
+                  style:
+                      TextStyle(
+                    fontWeight:
+                        FontWeight
+                            .w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 14,
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons
+                    .how_to_vote_outlined,
+                color: sideColor,
+                size: 20,
+              ),
+              const SizedBox(
+                width: 8,
+              ),
+              Expanded(
+                child: Text(
+                  'Your side: $sideName',
+                  style:
+                      TextStyle(
+                    color: sideColor,
+                    fontWeight:
+                        FontWeight
+                            .w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 9,
+          ),
+          Row(
+            children: [
+              const Icon(
+                Icons
+                    .monetization_on_outlined,
+                size: 20,
+                color:
+                    Color(
+                  0xFF6C4DFF,
+                ),
+              ),
+              const SizedBox(
+                width: 8,
+              ),
+              Expanded(
+                child: Text(
+                  coinBoost > 0
+                      ? 'TugCoin boost: +$coinBoost support'
+                      : 'TugCoin boost: None',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 14,
+          ),
+          const Text(
+            'Final results will be available when the face-off closes.',
+            style: TextStyle(
+              color:
+                  Color(
+                0xFF686570,
+              ),
+              fontSize: 12,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

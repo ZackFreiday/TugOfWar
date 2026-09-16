@@ -1,13 +1,24 @@
 class FaceOffComment {
   final int id;
+
   final int faceOffId;
+
   final int userId;
+
   final String username;
+
+  final String? profileImageUrl;
+
   final String content;
+
   final DateTime createdAt;
+
   final DateTime? updatedAt;
+
   final int likeCount;
+
   final bool isLikedByCurrentUser;
+
   final int? chosenSide;
 
   const FaceOffComment({
@@ -15,6 +26,7 @@ class FaceOffComment {
     required this.faceOffId,
     required this.userId,
     required this.username,
+    required this.profileImageUrl,
     required this.content,
     required this.createdAt,
     required this.updatedAt,
@@ -28,12 +40,19 @@ class FaceOffComment {
   ) {
     return FaceOffComment(
       id: json['id'] as int,
-      faceOffId: json['faceOffId'] as int,
-      userId: json['userId'] as int,
+      faceOffId:
+          json['faceOffId'] as int,
+      userId:
+          json['userId'] as int,
       username:
-          json['username'] as String? ?? '',
+          json['username'] as String? ??
+              '',
+      profileImageUrl:
+          json['profileImageUrl']
+              as String?,
       content:
-          json['content'] as String? ?? '',
+          json['content'] as String? ??
+              '',
       createdAt: DateTime.parse(
         json['createdAt'] as String,
       ),
@@ -45,7 +64,8 @@ class FaceOffComment {
                       as String,
                 ),
       likeCount:
-          json['likeCount'] as int? ?? 0,
+          json['likeCount'] as int? ??
+              0,
       isLikedByCurrentUser:
           json['isLikedByCurrentUser']
                   as bool? ??

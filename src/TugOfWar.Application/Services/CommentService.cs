@@ -344,9 +344,9 @@ public class CommentService : ICommentService
     }
 
     private async Task<CommentResponse>
-    MapToResponseAsync(
-        Comment comment,
-        int currentUserId)
+MapToResponseAsync(
+    Comment comment,
+    int currentUserId)
     {
         var vote =
             await _voteRepository.GetUserVoteAsync(
@@ -366,6 +366,9 @@ public class CommentService : ICommentService
             Username =
                 comment.User?.UserName ??
                 string.Empty,
+
+            ProfileImageUrl =
+                comment.User?.ProfileImageUrl,
 
             Content =
                 comment.Content,

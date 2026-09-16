@@ -20,6 +20,9 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  static const Color _purple =
+      Color(0xFF6C4DFF);
+
   int _selectedIndex = 0;
 
   int _homeRefreshVersion = 0;
@@ -79,6 +82,77 @@ class _MainShellState extends State<MainShell> {
         .loadUnreadNotificationCount();
   }
 
+  void _openProfile() {
+    if (_selectedIndex == 1) {
+      return;
+    }
+
+    setState(() {
+      _profileRefreshVersion++;
+      _selectedIndex = 1;
+    });
+
+    context
+        .read<AppState>()
+        .loadProfile();
+
+    context
+        .read<AppState>()
+        .loadUnreadNotificationCount();
+  }
+
+  Future<void> _confirmLogout() async {
+    final shouldLogout =
+        await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: const Icon(
+            Icons.logout_rounded,
+            color: _purple,
+          ),
+          title: const Text(
+            'Log out?',
+          ),
+          content: const Text(
+            'You will need to log in again to access your account.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(false);
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(true);
+              },
+              child: const Text(
+                'Log out',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout != true ||
+        !mounted) {
+      return;
+    }
+
+    await context
+        .read<AppState>()
+        .logout();
+  }
+
   Widget _buildNotificationButton(
     AppState appState,
   ) {
@@ -98,6 +172,139 @@ class _MainShellState extends State<MainShell> {
         ),
         child: const Icon(
           Icons.notifications_outlined,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountAvatar(
+    AppState appState,
+  ) {
+    final profileImageUrl =
+        appState.profile
+            ?.profileImageUrl
+            ?.trim();
+
+    if (profileImageUrl == null ||
+        profileImageUrl.isEmpty) {
+      return const CircleAvatar(
+        radius: 16,
+        backgroundColor:
+            Color(0xFFEDE9FF),
+        child: Icon(
+          Icons.person,
+          size: 20,
+          color: _purple,
+        ),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor:
+          const Color(0xFFEDE9FF),
+      child: ClipOval(
+        child: Image.network(
+          profileImageUrl,
+          width: 32,
+          height: 32,
+          fit: BoxFit.cover,
+          errorBuilder: (
+            context,
+            error,
+            stackTrace,
+          ) {
+            return const SizedBox(
+              width: 32,
+              height: 32,
+              child: Icon(
+                Icons.person,
+                size: 20,
+                color: _purple,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountMenu(
+    AppState appState,
+  ) {
+    return PopupMenuButton<String>(
+      tooltip: 'Account',
+      position:
+          PopupMenuPosition.under,
+      offset: const Offset(
+        0,
+        6,
+      ),
+      onSelected: (value) {
+        if (value == 'profile') {
+          _openProfile();
+          return;
+        }
+
+        if (value == 'logout') {
+          _confirmLogout();
+        }
+      },
+      itemBuilder: (context) {
+        return const [
+          PopupMenuItem<String>(
+            value: 'profile',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.person_outline,
+                ),
+                SizedBox(
+                  width: 12,
+                ),
+                Text(
+                  'Profile',
+                ),
+              ],
+            ),
+          ),
+          PopupMenuDivider(),
+          PopupMenuItem<String>(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.logout_rounded,
+                  color: Color(
+                    0xFFD93B4B,
+                  ),
+                ),
+                SizedBox(
+                  width: 12,
+                ),
+                Text(
+                  'Log out',
+                  style: TextStyle(
+                    color: Color(
+                      0xFFD93B4B,
+                    ),
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ];
+      },
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 8,
+        ),
+        child: _buildAccountAvatar(
+          appState,
         ),
       ),
     );
@@ -195,7 +402,7 @@ class _MainShellState extends State<MainShell> {
             Padding(
               padding:
                   const EdgeInsets.only(
-                right: 4,
+                right: 2,
               ),
               child: Center(
                 child: Row(
@@ -203,9 +410,10 @@ class _MainShellState extends State<MainShell> {
                     const Icon(
                       Icons
                           .monetization_on_outlined,
+                      size: 21,
                     ),
                     const SizedBox(
-                      width: 6,
+                      width: 5,
                     ),
                     Text(
                       '${appState.coinBalance}',
@@ -214,19 +422,27 @@ class _MainShellState extends State<MainShell> {
                 ),
               ),
             ),
+
           _buildNotificationButton(
             appState,
           ),
+
+          _buildAccountMenu(
+            appState,
+          ),
+
           const SizedBox(
-            width: 8,
+            width: 4,
           ),
         ],
       ),
+
       body: IndexedStack(
         index:
             safeSelectedIndex,
         children: pages,
       ),
+
       bottomNavigationBar:
           NavigationBar(
         selectedIndex:

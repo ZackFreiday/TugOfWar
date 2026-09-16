@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/constants/countries.dart';
 import '../../core/services/profile_service.dart';
 import '../../models/profile.dart';
 
@@ -33,8 +34,7 @@ class _EditProfileScreenState
   late final TextEditingController
       _bioController;
 
-  late final TextEditingController
-      _countryController;
+  String? _selectedCountry;
 
   XFile? _selectedImage;
 
@@ -57,10 +57,19 @@ class _EditProfileScreenState
       text: widget.profile.bio ?? '',
     );
 
-    _countryController =
-        TextEditingController(
-      text: widget.profile.country ?? '',
-    );
+    final currentCountry =
+        widget.profile.country?.trim();
+
+    if (currentCountry != null &&
+        currentCountry.isNotEmpty &&
+        countries.contains(
+          currentCountry,
+        )) {
+      _selectedCountry =
+          currentCountry;
+    } else {
+      _selectedCountry = null;
+    }
 
     _currentProfileImageUrl =
         widget.profile.profileImageUrl;
@@ -70,7 +79,6 @@ class _EditProfileScreenState
   void dispose() {
     _usernameController.dispose();
     _bioController.dispose();
-    _countryController.dispose();
 
     super.dispose();
   }
@@ -189,6 +197,203 @@ class _EditProfileScreenState
     }
   }
 
+  Future<void> _selectCountry() async {
+    if (_isSaving) {
+      return;
+    }
+
+    final selected =
+        await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        String searchQuery = '';
+
+        return StatefulBuilder(
+          builder: (
+            context,
+            setModalState,
+          ) {
+            final query =
+                searchQuery
+                    .trim()
+                    .toLowerCase();
+
+            final filteredCountries =
+                countries.where(
+              (country) {
+                return country
+                    .toLowerCase()
+                    .contains(
+                      query,
+                    );
+              },
+            ).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom:
+                    MediaQuery.of(context)
+                            .viewInsets
+                            .bottom +
+                        16,
+              ),
+              child: SizedBox(
+                height:
+                    MediaQuery.of(context)
+                            .size
+                            .height *
+                        0.75,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Select country',
+                            style:
+                                Theme.of(context)
+                                    .textTheme
+                                    .titleLarge,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            FocusScope.of(context)
+                                .unfocus();
+
+                            Navigator.pop(
+                              context,
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.close,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    TextField(
+                      autofocus: true,
+                      decoration:
+                          const InputDecoration(
+                        labelText:
+                            'Search countries',
+                        prefixIcon: Icon(
+                          Icons.search,
+                        ),
+                        border:
+                            OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setModalState(() {
+                          searchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons
+                            .remove_circle_outline,
+                      ),
+                      title: const Text(
+                        'Not set',
+                      ),
+                      selected:
+                          _selectedCountry ==
+                              null,
+                      onTap: () {
+                        FocusScope.of(context)
+                            .unfocus();
+
+                        Navigator.pop(
+                          context,
+                          '',
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    Expanded(
+                      child:
+                          filteredCountries
+                                  .isEmpty
+                              ? const Center(
+                                  child: Text(
+                                    'No countries found.',
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount:
+                                      filteredCountries
+                                          .length,
+                                  itemBuilder: (
+                                    context,
+                                    index,
+                                  ) {
+                                    final country =
+                                        filteredCountries[
+                                            index];
+
+                                    return ListTile(
+                                      title: Text(
+                                        country,
+                                      ),
+                                      selected:
+                                          country ==
+                                              _selectedCountry,
+                                      trailing:
+                                          country ==
+                                                  _selectedCountry
+                                              ? const Icon(
+                                                  Icons
+                                                      .check,
+                                                )
+                                              : null,
+                                      onTap: () {
+                                        FocusScope.of(
+                                          context,
+                                        ).unfocus();
+
+                                        Navigator.pop(
+                                          context,
+                                          country,
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted ||
+        selected == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedCountry =
+          selected.isEmpty
+              ? null
+              : selected;
+    });
+  }
+
   Future<void> _save() async {
     final username =
         _usernameController.text.trim();
@@ -224,7 +429,7 @@ class _EditProfileScreenState
         username: username,
         bio: _bioController.text,
         country:
-            _countryController.text,
+            _selectedCountry ?? '',
         profileImageUrl:
             _currentProfileImageUrl,
       );
@@ -484,18 +689,46 @@ class _EditProfileScreenState
                 const SizedBox(
                   height: 16,
                 ),
-                TextField(
-                  controller:
-                      _countryController,
-                  enabled:
-                      !_isSaving,
-                  maxLength: 100,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Country',
-                    border:
-                        OutlineInputBorder(),
+                InkWell(
+                  onTap:
+                      _isSaving
+                          ? null
+                          : _selectCountry,
+                  borderRadius:
+                      BorderRadius.circular(
+                    4,
+                  ),
+                  child: InputDecorator(
+                    decoration:
+                        InputDecoration(
+                      labelText:
+                          'Country',
+                      border:
+                          const OutlineInputBorder(),
+                      enabled:
+                          !_isSaving,
+                      suffixIcon:
+                          const Icon(
+                        Icons
+                            .arrow_drop_down,
+                      ),
+                    ),
+                    child: Text(
+                      _selectedCountry ??
+                          'Not set',
+                      style:
+                          _selectedCountry ==
+                                  null
+                              ? TextStyle(
+                                  color:
+                                      Theme.of(
+                                    context,
+                                  )
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                )
+                              : null,
+                    ),
                   ),
                 ),
                 const SizedBox(

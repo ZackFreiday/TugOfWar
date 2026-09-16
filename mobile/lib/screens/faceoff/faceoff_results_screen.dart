@@ -32,6 +32,27 @@ class _FaceOffResultsScreenState
 
   bool _isSharing = false;
 
+  static const Color _purple =
+      Color(0xFF6C4DFF);
+
+  static const Color _blue =
+      Color(0xFF147BFF);
+
+  static const Color _blueLight =
+      Color(0xFFEAF3FF);
+
+  static const Color _red =
+      Color(0xFFFF3158);
+
+  static const Color _redLight =
+      Color(0xFFFFEDF1);
+
+  static const Color _secondaryText =
+      Color(0xFF686570);
+
+  static const Color _border =
+      Color(0xFFE4E1EA);
+
   @override
   void initState() {
     super.initState();
@@ -132,15 +153,15 @@ class _FaceOffResultsScreenState
           byteData.buffer.asUint8List();
 
       final fileName =
-          'tugofwar-result-${result.faceOffId}.png';
+          'tugvote-result-${result.faceOffId}.png';
 
       await shareResultImage(
         bytes: pngBytes,
         fileName: fileName,
         title:
-            '${result.title} — TugOfWar',
+            '${result.title} — TugVote',
         text:
-            '${result.title} — final result on TugOfWar',
+            '${result.title} — final result on TugVote',
       );
     } catch (error) {
       if (!mounted) {
@@ -224,13 +245,15 @@ class _FaceOffResultsScreenState
           'Final results',
         ),
       ),
-      body: FutureBuilder<FaceOffResult>(
+      body:
+          FutureBuilder<FaceOffResult>(
         future: _resultFuture,
         builder: (
           context,
           snapshot,
         ) {
-          if (snapshot.connectionState ==
+          if (snapshot
+                  .connectionState ==
               ConnectionState.waiting) {
             return const Center(
               child:
@@ -250,8 +273,10 @@ class _FaceOffResultsScreenState
                       MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.error_outline,
+                      Icons
+                          .error_outline_rounded,
                       size: 48,
+                      color: _purple,
                     ),
                     const SizedBox(
                       height: 12,
@@ -267,8 +292,10 @@ class _FaceOffResultsScreenState
                       height: 16,
                     ),
                     FilledButton(
-                      onPressed: _reload,
-                      child: const Text(
+                      onPressed:
+                          _reload,
+                      child:
+                          const Text(
                         'Try again',
                       ),
                     ),
@@ -283,44 +310,77 @@ class _FaceOffResultsScreenState
 
           final String outcomeText;
           final IconData outcomeIcon;
+          final Color outcomeColor;
+          final Color outcomeBackground;
 
           if (result.isTie) {
             outcomeText =
                 'It is a tie!';
 
             outcomeIcon =
-                Icons.balance_outlined;
-          } else if (result.winningSide ==
+                Icons.balance_rounded;
+
+            outcomeColor =
+                _purple;
+
+            outcomeBackground =
+                const Color(
+              0xFFEDE9FF,
+            );
+          } else if (result
+                  .winningSide ==
               'A') {
             outcomeText =
                 '${result.sideAName} wins!';
 
             outcomeIcon =
                 Icons
-                    .emoji_events_outlined;
-          } else if (result.winningSide ==
+                    .emoji_events_rounded;
+
+            outcomeColor =
+                _blue;
+
+            outcomeBackground =
+                _blueLight;
+          } else if (result
+                  .winningSide ==
               'B') {
             outcomeText =
                 '${result.sideBName} wins!';
 
             outcomeIcon =
                 Icons
-                    .emoji_events_outlined;
+                    .emoji_events_rounded;
+
+            outcomeColor =
+                _red;
+
+            outcomeBackground =
+                _redLight;
           } else {
             outcomeText =
                 'Final result';
 
             outcomeIcon =
-                Icons.bar_chart_outlined;
+                Icons
+                    .bar_chart_rounded;
+
+            outcomeColor =
+                _purple;
+
+            outcomeBackground =
+                const Color(
+              0xFFEDE9FF,
+            );
           }
 
           return SingleChildScrollView(
             padding:
                 const EdgeInsets.fromLTRB(
               20,
+              12,
               20,
-              20,
-              32,
+              28,
             ),
             child: Center(
               child: ConstrainedBox(
@@ -337,70 +397,124 @@ class _FaceOffResultsScreenState
                       result.title,
                       textAlign:
                           TextAlign.center,
-                      style:
-                          Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
-                              ),
+                      style: Theme.of(
+                        context,
+                      )
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                            fontWeight:
+                                FontWeight
+                                    .w800,
+                          ),
                     ),
+
                     const SizedBox(
                       height: 20,
                     ),
-                    Card(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets
-                                .all(
-                          20,
+
+                    // Winner
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        horizontal: 20,
+                        vertical: 22,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            outcomeBackground,
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          18,
                         ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              outcomeIcon,
-                              size: 44,
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              outcomeText,
-                              textAlign:
-                                  TextAlign
-                                      .center,
-                              style: Theme.of(
-                                context,
-                              )
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                  ),
-                            ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Text(
-                              result.totalParticipants ==
-                                      1
-                                  ? 'Based on 1 participant'
-                                  : 'Based on ${result.totalParticipants} participants',
-                              textAlign:
-                                  TextAlign
-                                      .center,
-                            ),
-                          ],
+                        border:
+                            Border.all(
+                          color:
+                              outcomeColor
+                                  .withValues(
+                            alpha: 0.25,
+                          ),
                         ),
                       ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration:
+                                BoxDecoration(
+                              color:
+                                  Colors.white,
+                              shape:
+                                  BoxShape
+                                      .circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      outcomeColor
+                                          .withValues(
+                                    alpha:
+                                        0.12,
+                                  ),
+                                  blurRadius:
+                                      14,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              outcomeIcon,
+                              color:
+                                  outcomeColor,
+                              size: 30,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Text(
+                            outcomeText,
+                            textAlign:
+                                TextAlign
+                                    .center,
+                            style:
+                                TextStyle(
+                              color:
+                                  outcomeColor,
+                              fontSize: 21,
+                              fontWeight:
+                                  FontWeight
+                                      .w800,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            result.totalParticipants ==
+                                    1
+                                ? 'Based on 1 participant'
+                                : 'Based on ${result.totalParticipants} participants',
+                            textAlign:
+                                TextAlign
+                                    .center,
+                            style:
+                                const TextStyle(
+                              color:
+                                  _secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+
                     const SizedBox(
-                      height: 20,
+                      height: 18,
                     ),
+
+                    // Side result cards
                     Row(
                       crossAxisAlignment:
                           CrossAxisAlignment
@@ -423,14 +537,19 @@ class _FaceOffResultsScreenState
                                         .userSupportedSide ==
                                     'A',
                             isWinner:
-                                !result.isTie &&
+                                !result
+                                        .isTie &&
                                     result
                                             .winningSide ==
                                         'A',
+                            accentColor:
+                                _blue,
+                            tintColor:
+                                _blueLight,
                           ),
                         ),
                         const SizedBox(
-                          width: 16,
+                          width: 12,
                         ),
                         Expanded(
                           child:
@@ -449,159 +568,199 @@ class _FaceOffResultsScreenState
                                         .userSupportedSide ==
                                     'B',
                             isWinner:
-                                !result.isTie &&
+                                !result
+                                        .isTie &&
                                     result
                                             .winningSide ==
                                         'B',
+                            accentColor:
+                                _red,
+                            tintColor:
+                                _redLight,
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(
                       height: 24,
                     ),
-                    Text(
+
+                    const Text(
                       'Support distribution',
                       style:
-                          Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
-                              ),
+                          TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight
+                                .w800,
+                      ),
                     ),
+
                     const SizedBox(
                       height: 12,
                     ),
-                    ClipRRect(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        12,
-                      ),
-                      child:
-                          LinearProgressIndicator(
-                        value: result
-                                .sideAPercentage /
-                            100,
-                        minHeight: 22,
-                      ),
+
+                    _SplitResultBar(
+                      sideAPercentage:
+                          result
+                              .sideAPercentage,
                     ),
+
                     const SizedBox(
-                      height: 8,
+                      height: 10,
                     ),
+
                     Row(
                       children: [
-                        Text(
-                          '${result.sideAPercentage.toStringAsFixed(1)}%',
+                        Expanded(
+                          child: Text(
+                            '${result.sideAName}  ${result.sideAPercentage.toStringAsFixed(1)}%',
+                            style:
+                                const TextStyle(
+                              color: _blue,
+                              fontSize: 12,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                            ),
+                          ),
                         ),
-                        const Spacer(),
-                        Text(
-                          '${result.sideBPercentage.toStringAsFixed(1)}%',
+                        Expanded(
+                          child: Text(
+                            '${result.sideBPercentage.toStringAsFixed(1)}%  ${result.sideBName}',
+                            textAlign:
+                                TextAlign
+                                    .right,
+                            style:
+                                const TextStyle(
+                              color: _red,
+                              fontSize: 12,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                            ),
+                          ),
                         ),
                       ],
                     ),
+
                     const SizedBox(
-                      height: 28,
+                      height: 26,
                     ),
-                    Card(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets
-                                .all(
-                          20,
+
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .all(
+                        18,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            Colors.white,
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          16,
                         ),
-                        child: Column(
-                          children: [
-                            _StatisticRow(
-                              label:
-                                  'Participants',
-                              value:
-                                  '${result.totalParticipants}',
-                            ),
-                            const Divider(),
-                            _StatisticRow(
-                              label:
-                                  'Total votes',
-                              value:
-                                  '${result.sideAVotes + result.sideBVotes}',
-                            ),
-                          ],
+                        border:
+                            Border.all(
+                          color: _border,
                         ),
                       ),
+                      child: Column(
+                        children: [
+                          _StatisticRow(
+                            label:
+                                'Participants',
+                            value:
+                                '${result.totalParticipants}',
+                          ),
+                          const Divider(
+                            height: 22,
+                          ),
+                          _StatisticRow(
+                            label:
+                                'Total votes',
+                            value:
+                                '${result.sideAVotes + result.sideBVotes}',
+                          ),
+                        ],
+                      ),
                     ),
+
                     if (result
                             .userSupportedSide !=
                         null) ...[
                       const SizedBox(
-                        height: 20,
+                        height: 18,
                       ),
-                      Card(
-                        child: Padding(
-                          padding:
-                              const EdgeInsets
-                                  .all(
-                            20,
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons
-                                    .how_to_vote_outlined,
-                              ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  result.userSupportedSide ==
-                                          'A'
-                                      ? 'You supported ${result.sideAName}.'
-                                      : 'You supported ${result.sideBName}.',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+
+                      _UserChoiceCard(
+                        sideName: result
+                                    .userSupportedSide ==
+                                'A'
+                            ? result
+                                .sideAName
+                            : result
+                                .sideBName,
+                        accentColor: result
+                                    .userSupportedSide ==
+                                'A'
+                            ? _blue
+                            : _red,
+                        tintColor: result
+                                    .userSupportedSide ==
+                                'A'
+                            ? _blueLight
+                            : _redLight,
                       ),
                     ],
+
                     const SizedBox(
-                      height: 24,
+                      height: 22,
                     ),
-                    FilledButton.icon(
-                      onPressed:
-                          _isSharing
-                              ? null
-                              : () =>
-                                  _shareResult(
-                                    result,
-                                  ),
-                      icon: _isSharing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth:
-                                    2,
+
+                    // Intentionally 52px,
+                    // rather than the old
+                    // oversized button.
+                    SizedBox(
+                      height: 52,
+                      child:
+                          FilledButton.icon(
+                        onPressed:
+                            _isSharing
+                                ? null
+                                : () =>
+                                    _shareResult(
+                                      result,
+                                    ),
+                        icon: _isSharing
+                            ? const SizedBox(
+                                width: 19,
+                                height: 19,
+                                child:
+                                    CircularProgressIndicator(
+                                  strokeWidth:
+                                      2,
+                                ),
+                              )
+                            : const Icon(
+                                Icons
+                                    .share_outlined,
+                                size: 20,
                               ),
-                            )
-                          : const Icon(
-                              Icons
-                                  .share_outlined,
-                            ),
-                      label: Padding(
-                        padding:
-                            const EdgeInsets
-                                .symmetric(
-                          vertical: 14,
-                        ),
-                        child: Text(
+                        label: Text(
                           _isSharing
                               ? 'Preparing...'
                               : 'Share result',
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight
+                                    .w800,
+                          ),
                         ),
                       ),
                     ),
@@ -616,255 +775,68 @@ class _FaceOffResultsScreenState
   }
 }
 
-class _ShareResultCard
+class _SplitResultBar
     extends StatelessWidget {
-  final FaceOffResult result;
+  final double sideAPercentage;
 
-  const _ShareResultCard({
-    required this.result,
+  const _SplitResultBar({
+    required this.sideAPercentage,
   });
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    final String outcome;
+    const blue =
+        Color(0xFF147BFF);
 
-    if (result.isTie) {
-      outcome = 'IT IS A TIE';
-    } else if (result.winningSide ==
-        'A') {
-      outcome =
-          '${result.sideAName} WINS';
-    } else if (result.winningSide ==
-        'B') {
-      outcome =
-          '${result.sideBName} WINS';
-    } else {
-      outcome = 'FINAL RESULT';
-    }
+    const red =
+        Color(0xFFFF3158);
 
-    return Material(
-      color: Colors.white,
-      child: Container(
-        width: 600,
-        padding:
-            const EdgeInsets.all(
-          40,
-        ),
-        color: Colors.white,
-        child: DefaultTextStyle(
-          style:
-              const TextStyle(
-            color: Colors.black,
-          ),
-          child: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .center,
-                children: [
-                  const Icon(
-                    Icons
-                        .sports_score_rounded,
-                    size: 30,
-                    color:
-                        Colors.black,
+    final a =
+        sideAPercentage
+            .clamp(
+              0.0,
+              100.0,
+            ) /
+        100;
+
+    return ClipRRect(
+      borderRadius:
+          BorderRadius.circular(
+        20,
+      ),
+      child: SizedBox(
+        height: 16,
+        child: LayoutBuilder(
+          builder: (
+            context,
+            constraints,
+          ) {
+            return Stack(
+              children: [
+                const Positioned.fill(
+                  child: ColoredBox(
+                    color: red,
                   ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'TugOfWar',
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
-                              color:
-                                  Colors.black,
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 34,
-              ),
-              Text(
-                result.title,
-                textAlign:
-                    TextAlign.center,
-                style:
-                    const TextStyle(
-                  color: Colors.black,
-                  fontSize: 30,
-                  fontWeight:
-                      FontWeight.bold,
                 ),
-              ),
-              const SizedBox(
-                height: 28,
-              ),
-              Icon(
-                result.isTie
-                    ? Icons
-                        .balance_outlined
-                    : Icons
-                        .emoji_events_outlined,
-                size: 48,
-                color: Colors.black,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                outcome,
-                textAlign:
-                    TextAlign.center,
-                style:
-                    const TextStyle(
-                  color: Colors.black,
-                  fontSize: 24,
-                  fontWeight:
-                      FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 36,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          result.sideAName,
-                          textAlign:
-                              TextAlign
-                                  .center,
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black,
-                            fontSize:
-                                20,
-                            fontWeight:
-                                FontWeight
-                                    .w600,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Text(
-                          '${result.sideAPercentage.toStringAsFixed(1)}%',
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black,
-                            fontSize:
-                                36,
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Padding(
-                    padding:
-                        EdgeInsets
-                            .symmetric(
-                      horizontal: 20,
-                    ),
-                    child: Text(
-                      'VS',
-                      style:
-                          TextStyle(
-                        color:
-                            Colors.black54,
-                        fontSize: 18,
-                        fontWeight:
-                            FontWeight
-                                .bold,
+                if (a > 0)
+                  Align(
+                    alignment:
+                        Alignment.centerLeft,
+                    child: SizedBox(
+                      width: constraints
+                              .maxWidth *
+                          a,
+                      child:
+                          const ColoredBox(
+                        color: blue,
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          result.sideBName,
-                          textAlign:
-                              TextAlign
-                                  .center,
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black,
-                            fontSize:
-                                20,
-                            fontWeight:
-                                FontWeight
-                                    .w600,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Text(
-                          '${result.sideBPercentage.toStringAsFixed(1)}%',
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black,
-                            fontSize:
-                                36,
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 34,
-              ),
-              Text(
-                result.totalParticipants ==
-                        1
-                    ? '1 participant'
-                    : '${result.totalParticipants} participants',
-                style:
-                    const TextStyle(
-                  color:
-                      Colors.black54,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              const Text(
-                'Final result',
-                style: TextStyle(
-                  color:
-                      Colors.black54,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -878,6 +850,8 @@ class _ResultSideCard
   final int votes;
   final bool isUserSide;
   final bool isWinner;
+  final Color accentColor;
+  final Color tintColor;
 
   const _ResultSideCard({
     required this.name,
@@ -885,86 +859,225 @@ class _ResultSideCard
     required this.votes,
     required this.isUserSide,
     required this.isWinner,
+    required this.accentColor,
+    required this.tintColor,
   });
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    return Card(
-      child: Padding(
-        padding:
-            const EdgeInsets.all(
-          18,
+    return Container(
+      constraints:
+          const BoxConstraints(
+        minHeight: 180,
+      ),
+      padding:
+          const EdgeInsets.all(
+        16,
+      ),
+      decoration: BoxDecoration(
+        color: tintColor,
+        borderRadius:
+            BorderRadius.circular(
+          17,
         ),
-        child: Column(
-          children: [
-            if (isWinner) ...[
-              const Icon(
-                Icons
-                    .emoji_events_outlined,
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-            ] else if (isUserSide) ...[
-              const Icon(
-                Icons
-                    .check_circle_outline,
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-            ],
-            Text(
-              name,
-              textAlign:
-                  TextAlign.center,
-              style:
-                  Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            Text(
-              '${percentage.toStringAsFixed(1)}%',
-              style:
-                  Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            Text(
-              votes == 1
-                  ? '1 vote'
-                  : '$votes votes',
-            ),
-            if (isUserSide) ...[
-              const SizedBox(
-                height: 10,
-              ),
-              const Text(
-                'Your choice',
-                style: TextStyle(
-                  fontWeight:
-                      FontWeight.w600,
+        border: Border.all(
+          color: accentColor
+              .withValues(
+            alpha:
+                isWinner ? 0.7 : 0.3,
+          ),
+          width:
+              isWinner ? 1.6 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          if (isWinner)
+            Container(
+              width: 34,
+              height: 34,
+              decoration:
+                  BoxDecoration(
+                color: Colors.white
+                    .withValues(
+                  alpha: 0.9,
                 ),
+                shape:
+                    BoxShape.circle,
               ),
-            ],
+              child: Icon(
+                Icons
+                    .emoji_events_rounded,
+                color: accentColor,
+                size: 20,
+              ),
+            )
+          else if (isUserSide)
+            Container(
+              width: 34,
+              height: 34,
+              decoration:
+                  BoxDecoration(
+                color: Colors.white
+                    .withValues(
+                  alpha: 0.9,
+                ),
+                shape:
+                    BoxShape.circle,
+              ),
+              child: Icon(
+                Icons
+                    .check_rounded,
+                color: accentColor,
+                size: 20,
+              ),
+            )
+          else
+            const SizedBox(
+              height: 34,
+            ),
+
+          const SizedBox(
+            height: 8,
+          ),
+
+          Text(
+            name,
+            textAlign:
+                TextAlign.center,
+            maxLines: 2,
+            overflow:
+                TextOverflow.ellipsis,
+            style: TextStyle(
+              color: accentColor,
+              fontSize: 15,
+              fontWeight:
+                  FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
+          Text(
+            '${percentage.toStringAsFixed(1)}%',
+            style: TextStyle(
+              color: accentColor,
+              fontSize: 29,
+              height: 1,
+              fontWeight:
+                  FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(
+            height: 10,
+          ),
+
+          Text(
+            votes == 1
+                ? '1 vote'
+                : '$votes votes',
+            style:
+                const TextStyle(
+              color:
+                  _FaceOffResultsScreenState
+                      ._secondaryText,
+            ),
+          ),
+
+          if (isUserSide) ...[
+            const SizedBox(
+              height: 8,
+            ),
+            Text(
+              'Your choice',
+              style: TextStyle(
+                color: accentColor,
+                fontSize: 12,
+                fontWeight:
+                    FontWeight.w700,
+              ),
+            ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _UserChoiceCard
+    extends StatelessWidget {
+  final String sideName;
+  final Color accentColor;
+  final Color tintColor;
+
+  const _UserChoiceCard({
+    required this.sideName,
+    required this.accentColor,
+    required this.tintColor,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.all(
+        16,
+      ),
+      decoration: BoxDecoration(
+        color: tintColor,
+        borderRadius:
+            BorderRadius.circular(
+          15,
         ),
+        border: Border.all(
+          color: accentColor
+              .withValues(
+            alpha: 0.25,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration:
+                BoxDecoration(
+              color: Colors.white
+                  .withValues(
+                alpha: 0.9,
+              ),
+              shape:
+                  BoxShape.circle,
+            ),
+            child: Icon(
+              Icons
+                  .how_to_vote_rounded,
+              color: accentColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(
+            width: 12,
+          ),
+          Expanded(
+            child: Text(
+              'You supported $sideName.',
+              style: TextStyle(
+                color: accentColor,
+                fontWeight:
+                    FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -988,6 +1101,12 @@ class _StatisticRow
       children: [
         Text(
           label,
+          style:
+              const TextStyle(
+            color:
+                _FaceOffResultsScreenState
+                    ._secondaryText,
+          ),
         ),
         const Spacer(),
         Text(
@@ -995,10 +1114,460 @@ class _StatisticRow
           style:
               const TextStyle(
             fontWeight:
-                FontWeight.bold,
+                FontWeight.w800,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ShareResultCard
+    extends StatelessWidget {
+  final FaceOffResult result;
+
+  const _ShareResultCard({
+    required this.result,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    const purple =
+        Color(0xFF6C4DFF);
+
+    const blue =
+        Color(0xFF147BFF);
+
+    const blueLight =
+        Color(0xFFEAF3FF);
+
+    const red =
+        Color(0xFFFF3158);
+
+    const redLight =
+        Color(0xFFFFEDF1);
+
+    final String outcome;
+    final Color winnerColor;
+
+    if (result.isTie) {
+      outcome =
+          'IT IS A TIE';
+
+      winnerColor =
+          purple;
+    } else if (result
+            .winningSide ==
+        'A') {
+      outcome =
+          '${result.sideAName.toUpperCase()} WINS';
+
+      winnerColor =
+          blue;
+    } else if (result
+            .winningSide ==
+        'B') {
+      outcome =
+          '${result.sideBName.toUpperCase()} WINS';
+
+      winnerColor =
+          red;
+    } else {
+      outcome =
+          'FINAL RESULT';
+
+      winnerColor =
+          purple;
+    }
+
+    return Material(
+      color: Colors.white,
+      child: Container(
+        width: 600,
+        padding:
+            const EdgeInsets.all(
+          40,
+        ),
+        color: const Color(
+          0xFFF8F7FC,
+        ),
+        child: DefaultTextStyle(
+          style:
+              const TextStyle(
+            color:
+                Color(
+              0xFF18171D,
+            ),
+          ),
+          child: Column(
+            mainAxisSize:
+                MainAxisSize.min,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                decoration:
+                    BoxDecoration(
+                  color:
+                      const Color(
+                    0xFFEDE9FF,
+                  ),
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    30,
+                  ),
+                ),
+                child:
+                    const Row(
+                  mainAxisSize:
+                      MainAxisSize
+                          .min,
+                  children: [
+                    Icon(
+                      Icons
+                          .compare_arrows_rounded,
+                      color:
+                          purple,
+                      size: 28,
+                    ),
+                    SizedBox(
+                      width: 8,
+                    ),
+                    Text(
+                      'TugVote',
+                      style:
+                          TextStyle(
+                        color:
+                            Color(
+                          0xFF18171D,
+                        ),
+                        fontSize: 22,
+                        fontWeight:
+                            FontWeight
+                                .w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(
+                height: 30,
+              ),
+
+              Text(
+                result.title,
+                textAlign:
+                    TextAlign.center,
+                style:
+                    const TextStyle(
+                  fontSize: 30,
+                  height: 1.2,
+                  fontWeight:
+                      FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(
+                height: 24,
+              ),
+
+              Icon(
+                result.isTie
+                    ? Icons
+                        .balance_rounded
+                    : Icons
+                        .emoji_events_rounded,
+                size: 48,
+                color:
+                    winnerColor,
+              ),
+
+              const SizedBox(
+                height: 8,
+              ),
+
+              Text(
+                outcome,
+                textAlign:
+                    TextAlign.center,
+                style: TextStyle(
+                  color:
+                      winnerColor,
+                  fontSize: 23,
+                  fontWeight:
+                      FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(
+                height: 30,
+              ),
+
+              Row(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .stretch,
+                children: [
+                  Expanded(
+                    child:
+                        _ShareSideCard(
+                      name: result
+                          .sideAName,
+                      percentage: result
+                          .sideAPercentage,
+                      accentColor:
+                          blue,
+                      tintColor:
+                          blueLight,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 14,
+                  ),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment:
+                        Alignment.center,
+                    decoration:
+                        const BoxDecoration(
+                      color: purple,
+                      shape:
+                          BoxShape.circle,
+                    ),
+                    child:
+                        const Text(
+                      'VS',
+                      style:
+                          TextStyle(
+                        color:
+                            Colors.white,
+                        fontWeight:
+                            FontWeight
+                                .w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 14,
+                  ),
+                  Expanded(
+                    child:
+                        _ShareSideCard(
+                      name: result
+                          .sideBName,
+                      percentage: result
+                          .sideBPercentage,
+                      accentColor:
+                          red,
+                      tintColor:
+                          redLight,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(
+                height: 28,
+              ),
+
+              _ShareDistributionBar(
+                sideAPercentage:
+                    result
+                        .sideAPercentage,
+              ),
+
+              const SizedBox(
+                height: 20,
+              ),
+
+              Text(
+                result.totalParticipants ==
+                        1
+                    ? 'Based on 1 participant'
+                    : 'Based on ${result.totalParticipants} participants',
+                style:
+                    const TextStyle(
+                  color:
+                      Color(
+                    0xFF686570,
+                  ),
+                  fontSize: 16,
+                ),
+              ),
+
+              const SizedBox(
+                height: 8,
+              ),
+
+              const Text(
+                'Final result on TugVote',
+                style:
+                    TextStyle(
+                  color:
+                      Color(
+                    0xFF8B8793,
+                  ),
+                  fontSize: 14,
+                  fontWeight:
+                      FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareSideCard
+    extends StatelessWidget {
+  final String name;
+  final double percentage;
+  final Color accentColor;
+  final Color tintColor;
+
+  const _ShareSideCard({
+    required this.name,
+    required this.percentage,
+    required this.accentColor,
+    required this.tintColor,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets
+              .symmetric(
+        horizontal: 14,
+        vertical: 22,
+      ),
+      decoration: BoxDecoration(
+        color: tintColor,
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
+        border: Border.all(
+          color: accentColor
+              .withValues(
+            alpha: 0.3,
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+        children: [
+          Text(
+            name,
+            textAlign:
+                TextAlign.center,
+            maxLines: 2,
+            overflow:
+                TextOverflow.ellipsis,
+            style: TextStyle(
+              color: accentColor,
+              fontSize: 18,
+              fontWeight:
+                  FontWeight.w800,
+            ),
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          Text(
+            '${percentage.toStringAsFixed(1)}%',
+            style: TextStyle(
+              color: accentColor,
+              fontSize: 34,
+              fontWeight:
+                  FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShareDistributionBar
+    extends StatelessWidget {
+  final double sideAPercentage;
+
+  const _ShareDistributionBar({
+    required this.sideAPercentage,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    const blue =
+        Color(0xFF147BFF);
+
+    const red =
+        Color(0xFFFF3158);
+
+    final a =
+        sideAPercentage
+            .clamp(
+              0.0,
+              100.0,
+            ) /
+        100;
+
+    return ClipRRect(
+      borderRadius:
+          BorderRadius.circular(
+        20,
+      ),
+      child: SizedBox(
+        height: 16,
+        child: LayoutBuilder(
+          builder: (
+            context,
+            constraints,
+          ) {
+            return Stack(
+              children: [
+                const Positioned.fill(
+                  child:
+                      ColoredBox(
+                    color: red,
+                  ),
+                ),
+                if (a > 0)
+                  Align(
+                    alignment:
+                        Alignment.centerLeft,
+                    child: SizedBox(
+                      width: constraints
+                              .maxWidth *
+                          a,
+                      child:
+                          const ColoredBox(
+                        color: blue,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using TugOfWar.Api.Constants;
 using TugOfWar.Application.DTOs;
 using TugOfWar.Application.Interfaces;
 
@@ -99,6 +100,28 @@ public class ProfileController : ControllerBase
         UpdateProfile(
             UpdateProfileRequest request)
     {
+        var country =
+            request.Country?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(
+                country) &&
+            !Countries.All.Contains(
+                country))
+        {
+            return BadRequest(
+                new
+                {
+                    message =
+                        "Please select a valid country."
+                });
+        }
+
+        request.Country =
+            string.IsNullOrWhiteSpace(
+                country)
+                ? null
+                : country;
+
         var userId =
             GetAuthenticatedUserId();
 
@@ -268,7 +291,7 @@ public class ProfileController : ControllerBase
                 // so do not leave the newly
                 // uploaded file behind.
                 if (System.IO.File.Exists(
-                        filePath))
+                    filePath))
                 {
                     System.IO.File.Delete(
                         filePath);
